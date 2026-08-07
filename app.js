@@ -183,17 +183,18 @@ const STORAGE_KEY = "manshau_erp_state_v8";
 
 // Firebase Client Initialization Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAErR-u6nKGhele8Re9rrH7oKpZi98mBz0",
-  authDomain: "manshau-408d3.firebaseapp.com",
-  projectId: "manshau-408d3",
-  storageBucket: "manshau-408d3.firebasestorage.app",
-  messagingSenderId: "219428798097",
-  appId: "1:219428798097:web:1f9aa67eb9817d9ae70930",
-  measurementId: "G-9SZ61318JT"
+  apiKey: "AIzaSyBgHuEPFHrClZPBhan8JEPrF-vsba6-AQI",
+  authDomain: "manshau-alfaris-ee0e9.firebaseapp.com",
+  databaseURL: "https://manshau-alfaris-ee0e9-default-rtdb.firebaseio.com",
+  projectId: "manshau-alfaris-ee0e9",
+  storageBucket: "manshau-alfaris-ee0e9.firebasestorage.app",
+  messagingSenderId: "923493602955",
+  appId: "1:923493602955:web:e18f4a17e35f908384668e",
+  measurementId: "G-WB3382F1XJ"
 };
 
 let db;
-let fsDoc, fsSetDoc, fsDeleteDoc, fsCollection, fsGetDocs, fsOnSnapshot;
+let rtdbRef, rtdbSet, rtdbGet, rtdbOnValue, rtdbRemove, rtdbOff;
 let isBackendActive = false;
 
 function showToast(message, type = 'success') {
@@ -226,38 +227,38 @@ async function initFirebase() {
   if (window.db) {
     db = window.db;
     try {
-      const { doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-      fsDoc = doc;
-      fsSetDoc = setDoc;
-      fsDeleteDoc = deleteDoc;
-      fsCollection = collection;
-      fsGetDocs = getDocs;
-      fsOnSnapshot = onSnapshot;
+      const rtdbMod = await import("https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js");
+      rtdbRef = rtdbMod.ref;
+      rtdbSet = rtdbMod.set;
+      rtdbGet = rtdbMod.get;
+      rtdbOnValue = rtdbMod.onValue;
+      rtdbRemove = rtdbMod.remove;
+      rtdbOff = rtdbMod.off;
       setupRealtimeSync();
-      console.log("Firebase & Firestore connected!");
+      console.log("Firebase Realtime Database connected!");
       return;
     } catch(e) {
-      console.error("Firestore loading error:", e);
+      console.error("Realtime Database loading error:", e);
     }
   }
 
   try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-    const { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js");
+    const rtdbMod = await import("https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js");
 
     const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
+    db = rtdbMod.getDatabase(app);
     window.db = db;
-    
-    fsDoc = doc;
-    fsSetDoc = setDoc;
-    fsDeleteDoc = deleteDoc;
-    fsCollection = collection;
-    fsGetDocs = getDocs;
-    fsOnSnapshot = onSnapshot;
+
+    rtdbRef = rtdbMod.ref;
+    rtdbSet = rtdbMod.set;
+    rtdbGet = rtdbMod.get;
+    rtdbOnValue = rtdbMod.onValue;
+    rtdbRemove = rtdbMod.remove;
+    rtdbOff = rtdbMod.off;
 
     setupRealtimeSync();
-    console.log("Firebase & Firestore initialized successfully!");
+    console.log("Firebase Realtime Database initialized successfully!");
   } catch (e) {
     console.error("Firebase init failed:", e);
   }
@@ -295,15 +296,15 @@ let unsubscribeAnnouncements = null;
 let unsubscribeUsers = null;
 
 function setupRealtimeSync() {
-  if (!db || !fsCollection || !fsOnSnapshot || !fsDoc) return;
+  if (!db || !rtdbRef || !rtdbOnValue) return;
 
   if (unsubscribeSystem) { try { unsubscribeSystem(); } catch(e){} }
   if (unsubscribeAnnouncements) { try { unsubscribeAnnouncements(); } catch(e){} }
   if (unsubscribeUsers) { try { unsubscribeUsers(); } catch(e){} }
 
-  unsubscribeSystem = fsOnSnapshot(fsDoc(db, 'system', 'credentials'), (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
+  unsubscribeSystem = rtdbOnValue(rtdbRef(db, 'system/credentials'), (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
       if (data.adminCredentials) state.adminCredentials = data.adminCredentials;
       if (data.controlPanelCredentials) state.controlPanelCredentials = data.controlPanelCredentials;
       if (data.deletedStudentIds && Array.isArray(data.deletedStudentIds)) {
@@ -315,9 +316,9 @@ function setupRealtimeSync() {
     }
   });
 
-  unsubscribeAnnouncements = fsOnSnapshot(fsDoc(db, 'announcements', 'global'), (docSnap) => {
-    if (docSnap.exists()) {
-      state.announcements = docSnap.data().data || [];
+  unsubscribeAnnouncements = rtdbOnValue(rtdbRef(db, 'announcements/global'), (snapshot) => {
+    if (snapshot.exists()) {
+      state.announcements = snapshot.val().data || [];
       saveStateLocalOnly();
       isBackendActive = true;
       updateStatusBadgeUI();
@@ -325,25 +326,28 @@ function setupRealtimeSync() {
     }
   });
 
-  unsubscribeUsers = fsOnSnapshot(fsCollection(db, 'users'), (querySnapshot) => {
+  unsubscribeUsers = rtdbOnValue(rtdbRef(db, 'users'), (snapshot) => {
     const dbStudents = [];
-    querySnapshot.forEach((doc) => {
-      const docData = doc.data();
-      if (docData && docData.data) {
-        const studentId = doc.id.trim();
-        if (state.deletedStudentIds && state.deletedStudentIds.includes(studentId)) {
-          if (db && fsDoc && fsDeleteDoc) {
-            fsDeleteDoc(fsDoc(db, 'users', studentId)).catch(() => {});
+    if (snapshot.exists()) {
+      const usersData = snapshot.val();
+      Object.keys(usersData).forEach((studentId) => {
+        const docData = usersData[studentId];
+        if (docData && docData.data) {
+          const trimmedId = studentId.trim();
+          if (state.deletedStudentIds && state.deletedStudentIds.includes(trimmedId)) {
+            if (db && rtdbRef && rtdbRemove) {
+              rtdbRemove(rtdbRef(db, 'users/' + trimmedId)).catch(() => {});
+            }
+            return;
           }
-          return;
+          dbStudents.push({
+            id: trimmedId,
+            data: docData.data,
+            last_updated: docData.last_updated || docData.data.lastUpdated || 0
+          });
         }
-        dbStudents.push({
-          id: studentId,
-          data: docData.data,
-          last_updated: docData.last_updated || docData.data.lastUpdated || 0
-        });
-      }
-    });
+      });
+    }
 
     handleIncomingUsersSync(dbStudents);
   });
@@ -509,11 +513,11 @@ async function loadState() {
 
 async function saveStudentDoc(student) {
   saveStateLocalOnly();
-  if (!db || !fsDoc || !fsSetDoc || !student || !student.id) return;
+  if (!db || !rtdbRef || !rtdbSet || !student || !student.id) return;
   try {
     const incomingTime = Number(student.lastUpdated) || Date.now();
     student.lastUpdated = incomingTime;
-    await fsSetDoc(fsDoc(db, 'users', student.id), {
+    await rtdbSet(rtdbRef(db, 'users/' + student.id), {
       data: student,
       last_updated: incomingTime
     });
@@ -528,23 +532,23 @@ async function saveStudentDoc(student) {
 
 async function saveState() {
   saveStateLocalOnly();
-  if (!db || !fsDoc || !fsSetDoc) return;
+  if (!db || !rtdbRef || !rtdbSet) return;
 
   try {
     const studentPromises = (state.students || []).map(student => {
       const incomingTime = Number(student.lastUpdated) || Date.now();
       student.lastUpdated = incomingTime;
-      return fsSetDoc(fsDoc(db, 'users', student.id), {
+      return rtdbSet(rtdbRef(db, 'users/' + student.id), {
         data: student,
         last_updated: incomingTime
       });
     });
 
-    const announcementsPromise = fsSetDoc(fsDoc(db, 'announcements', 'global'), {
+    const announcementsPromise = rtdbSet(rtdbRef(db, 'announcements/global'), {
       data: state.announcements || []
     });
 
-    const credentialsPromise = fsSetDoc(fsDoc(db, 'system', 'credentials'), {
+    const credentialsPromise = rtdbSet(rtdbRef(db, 'system/credentials'), {
       adminCredentials: state.adminCredentials,
       controlPanelCredentials: state.controlPanelCredentials,
       deletedStudentIds: state.deletedStudentIds || []
@@ -2668,6 +2672,7 @@ function generateAttendanceDaysGrid(student, monthYearStr) {
   const details = getMonthYearDetails(monthYearStr || "August 2026");
   const records = (student && student.attendanceRecords) ? student.attendanceRecords : {};
   let html = '';
+  const canEditAttendance = state.role === 'admin' || state.role === 'controlpanel';
 
   // Render empty padding cells for days before the 1st of month
   for (let p = 0; p < details.firstDayOfWeek; p++) {
@@ -2681,26 +2686,36 @@ function generateAttendanceDaysGrid(student, monthYearStr) {
     const defaultStatus = (dayOfWeek === 0) ? "Upcoming" : "Present";
     const status = records[key] || defaultStatus;
 
-    let bgClass = "bg-emerald-500 text-white border-emerald-500 shadow-xs hover:bg-emerald-600 cursor-pointer hover:scale-105";
+    let cursorHoverClass = canEditAttendance ? "cursor-pointer hover:scale-105" : "cursor-default opacity-90";
+
+    let bgClass = `bg-emerald-500 text-white border-emerald-500 shadow-xs ${canEditAttendance ? 'hover:bg-emerald-600' : ''} ${cursorHoverClass}`;
 
     if (status === "Half Day") {
-      bgClass = "bg-amber-500 text-white border-amber-500 shadow-xs hover:bg-amber-600 cursor-pointer hover:scale-105";
+      bgClass = `bg-amber-500 text-white border-amber-500 shadow-xs ${canEditAttendance ? 'hover:bg-amber-600' : ''} ${cursorHoverClass}`;
     }
     if (status === "Absent" || status === "Leave") {
-      bgClass = "bg-rose-500 text-white border-rose-500 shadow-xs hover:bg-rose-600 cursor-pointer hover:scale-105";
+      bgClass = `bg-rose-500 text-white border-rose-500 shadow-xs ${canEditAttendance ? 'hover:bg-rose-600' : ''} ${cursorHoverClass}`;
     }
     if (status === "Academic Leave") {
-      bgClass = "bg-slate-900 text-white border-slate-900 shadow-xs font-black hover:bg-black cursor-pointer hover:scale-105";
+      bgClass = `bg-slate-900 text-white border-slate-900 shadow-xs font-black ${canEditAttendance ? 'hover:bg-black' : ''} ${cursorHoverClass}`;
     }
     if (status === "Upcoming" || status === "Holiday") {
-      bgClass = "bg-white text-slate-800 border-slate-300 shadow-xs font-black hover:bg-slate-100 cursor-pointer hover:scale-105";
+      bgClass = `bg-white text-slate-800 border-slate-300 shadow-xs font-black ${canEditAttendance ? 'hover:bg-slate-100' : ''} ${cursorHoverClass}`;
     }
+
+    const titleAttr = canEditAttendance 
+      ? `Day ${i} (${status}) - Click to toggle` 
+      : `Day ${i} (${status})`;
+
+    const onClickAttr = canEditAttendance 
+      ? `onclick="toggleAttendanceDayState('${student.id}', '${key}')"` 
+      : `onclick="showToast('Attendance can only be marked by Admin or Control Panel', 'info')"`;
 
     html += `
       <button 
-        onclick="toggleAttendanceDayState('${student.id}', '${key}')"
+        ${onClickAttr}
         class="h-9 sm:h-10 rounded-xl border font-black text-xs sm:text-sm transition-all flex items-center justify-center ${bgClass}"
-        title="Day ${i} (${status}) - Click to toggle"
+        title="${titleAttr}"
       >
         <span>${i}</span>
       </button>
@@ -2710,6 +2725,10 @@ function generateAttendanceDaysGrid(student, monthYearStr) {
 }
 
 async function toggleAttendanceDayState(studentId, dateKey) {
+  if (state.role !== 'admin' && state.role !== 'controlpanel') {
+    showToast("Attendance can only be marked by Admin or Control Panel", "error");
+    return;
+  }
   const student = state.students.find(s => s.id === studentId);
   if (!student) return;
   if (!student.attendanceRecords) student.attendanceRecords = {};
@@ -3577,8 +3596,8 @@ async function deleteStudentUser(id) {
   if (confirm("Are you sure you want to delete this student account?")) {
     state.deletedStudentIds.push(id);
     state.students = state.students.filter(s => s.id !== id);
-    if (db && fsDoc && fsDeleteDoc) {
-      fsDeleteDoc(fsDoc(db, 'users', id)).catch(() => {});
+    if (db && rtdbRef && rtdbRemove) {
+      rtdbRemove(rtdbRef(db, 'users/' + id)).catch(() => {});
     }
     await saveState();
     showToast("Student account deleted");
