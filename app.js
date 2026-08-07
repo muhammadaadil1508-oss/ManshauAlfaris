@@ -484,10 +484,17 @@ function sanitizeStudentsRoster() {
           ...(existing.attendanceRecords || {}),
           ...(s.attendanceRecords || {})
         };
+        // Strict Filter: Keep ONLY August 2026 records
+        const augustOnlyAttendance = {};
+        Object.keys(mergedAttendance).forEach(k => {
+          if (k.startsWith("August 2026-")) {
+            augustOnlyAttendance[k] = mergedAttendance[k];
+          }
+        });
         studentMap.set(s.id, { 
           ...existing, 
           ...s,
-          attendanceRecords: mergedAttendance
+          attendanceRecords: augustOnlyAttendance
         });
       }
     });
@@ -2678,6 +2685,23 @@ function getMonthYearDetails(monthYearStr) {
   return { monthName, monthIndex, year, daysInMonth, firstDayOfWeek };
 }
 
+function clearNonAugust2026Attendance() {
+  (state.students || []).forEach(student => {
+    if (student && student.attendanceRecords) {
+      const cleanRecords = {};
+      Object.keys(student.attendanceRecords).forEach(key => {
+        if (key.startsWith("August 2026-")) {
+          cleanRecords[key] = student.attendanceRecords[key];
+        }
+      });
+      student.attendanceRecords = cleanRecords;
+      recalculateAttendanceRate(student);
+      student.lastUpdated = Date.now();
+      saveStudentDoc(student);
+    }
+  });
+}
+
 function processDailyAutoAttendance() {
   const now = new Date();
   
@@ -2692,23 +2716,32 @@ function processDailyAutoAttendance() {
   (state.students || []).forEach(student => {
     student.attendanceRecords = student.attendanceRecords || {};
     
-    // Only apply default preset values if attendance has not been marked yet
-    if (student.attendanceRecords[`${monthYearKey}-1`] === undefined) {
-      student.attendanceRecords[`${monthYearKey}-1`] = "Academic Leave";
-    }
-    if (student.attendanceRecords[`${monthYearKey}-2`] === undefined) {
-      student.attendanceRecords[`${monthYearKey}-2`] = "Academic Leave";
-    }
-
-    for (let d = 3; d <= 7; d++) {
-      if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
-        student.attendanceRecords[`${monthYearKey}-${d}`] = "Present";
+    // Strict Cleanup: Remove any non-August 2026 keys
+    Object.keys(student.attendanceRecords).forEach(k => {
+      if (!k.startsWith("August 2026-")) {
+        delete student.attendanceRecords[k];
       }
-    }
+    });
+    
+    // Only apply default preset values for August 2026
+    if (monthYearKey === "August 2026") {
+      if (student.attendanceRecords[`${monthYearKey}-1`] === undefined) {
+        student.attendanceRecords[`${monthYearKey}-1`] = "Academic Leave";
+      }
+      if (student.attendanceRecords[`${monthYearKey}-2`] === undefined) {
+        student.attendanceRecords[`${monthYearKey}-2`] = "Academic Leave";
+      }
 
-    for (let d = 8; d <= 31; d++) {
-      if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
-        student.attendanceRecords[`${monthYearKey}-${d}`] = "Upcoming";
+      for (let d = 3; d <= 7; d++) {
+        if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
+          student.attendanceRecords[`${monthYearKey}-${d}`] = "Present";
+        }
+      }
+
+      for (let d = 8; d <= 31; d++) {
+        if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
+          student.attendanceRecords[`${monthYearKey}-${d}`] = "Upcoming";
+        }
       }
     }
 
@@ -2731,7 +2764,8 @@ function generateAttendanceDaysGrid(student, monthYearStr) {
   for (let i = 1; i <= details.daysInMonth; i++) {
     const key = `${monthYearStr}-${i}`;
     const dayOfWeek = new Date(details.year, details.monthIndex, i).getDay();
-    const defaultStatus = (dayOfWeek === 0) ? "Upcoming" : "Present";
+    const isAugust2026 = (monthYearStr || "").trim() === "August 2026";
+    const defaultStatus = isAugust2026 ? ((dayOfWeek === 0) ? "Upcoming" : "Present") : "Upcoming";
     const status = records[key] || defaultStatus;
 
     let cursorHoverClass = canEditAttendance ? "cursor-pointer hover:scale-105" : "cursor-default opacity-90";
