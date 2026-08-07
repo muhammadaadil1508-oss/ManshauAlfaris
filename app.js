@@ -1633,6 +1633,12 @@ function renderControlPanelPortal() {
           <span class="bg-amber-50 text-amber-600 text-xs px-3 py-1 rounded-full font-bold border border-amber-100 uppercase tracking-wider">ATTENDANCE REGISTER</span>
           <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Daily Attendance</h2>
         </div>
+        <div>
+          <button onclick="markAllStudentsPresentToday()" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 transition-all hover:scale-105 flex items-center space-x-2">
+            ${icon('check-circle', 'w-4 h-4 text-white')}
+            <span>Mark All Present Today</span>
+          </button>
+        </div>
       </div>
 
       <div class="glass-card p-6 rounded-3xl shadow-anti-gravity border border-white">
@@ -2816,6 +2822,31 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   }
 
   await saveState();
+  renderApp();
+}
+
+async function markAllStudentsPresentToday() {
+  const now = new Date();
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const currentMonthName = monthNames[now.getMonth()];
+  const currentYear = now.getFullYear();
+  const todayNum = now.getDate();
+  const dateKey = `${currentMonthName} ${currentYear}-${todayNum}`;
+
+  (state.students || []).forEach(student => {
+    if (!student.attendanceRecords) student.attendanceRecords = {};
+    student.attendanceRecords[dateKey] = "Present";
+    student.status = "Present";
+    recalculateAttendanceRate(student);
+    student.lastUpdated = Date.now();
+    saveStudentDoc(student);
+  });
+
+  await saveState();
+  showToast(`Marked TODAY (${dateKey}) as PRESENT for all students!`, "success");
   renderApp();
 }
 
@@ -4384,6 +4415,7 @@ window.changeBatchFilter = typeof changeBatchFilter !== 'undefined' ? changeBatc
 window.showAttendanceGraph = typeof showAttendanceGraph !== 'undefined' ? showAttendanceGraph : null;
 window.handleUpdateAdminCredentials = typeof handleUpdateAdminCredentials !== 'undefined' ? handleUpdateAdminCredentials : null;
 window.handleUpdateControlPanelCredentials = typeof handleUpdateControlPanelCredentials !== 'undefined' ? handleUpdateControlPanelCredentials : null;
+window.markAllStudentsPresentToday = typeof markAllStudentsPresentToday !== 'undefined' ? markAllStudentsPresentToday : null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadState();
