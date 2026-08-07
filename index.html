@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manshau ERP - Educational Institute Platform</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          },
+          boxShadow: {
+            'anti-gravity': '0 20px 50px -12px rgba(37, 99, 235, 0.08), 0 8px 24px -8px rgba(15, 23, 42, 0.04)',
+            'anti-gravity-hover': '0 30px 65px -12px rgba(37, 99, 235, 0.16), 0 12px 30px -8px rgba(15, 23, 42, 0.06)',
+            'anti-gravity-lg': '0 35px 80px -15px rgba(37, 99, 235, 0.14), 0 15px 35px -10px rgba(15, 23, 42, 0.06)',
+            'glow-blue': '0 0 30px rgba(37, 99, 235, 0.3)',
+            'glow-emerald': '0 0 25px rgba(16, 185, 129, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Optional Chart.js for canvas rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Client-side HTML-to-PDF Conversion Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Cropper.js CDN for 1:1 Square Profile Photo Cropping -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #f8fafc 50%, #eff6ff 100%);
+      min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .glass-card-dark {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .anti-gravity-card {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .anti-gravity-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 65px -12px rgba(37, 99, 235, 0.16), 0 12px 30px -8px rgba(15, 23, 42, 0.06);
+    }
+    .nav-item-lift {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-item-lift:hover {
+      transform: translateY(-2px);
+    }
+    .nav-sticky-footer {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .admin-sticky-footer {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes nameGradientShift {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    @keyframes nameFloatMove {
+      0%, 100% {
+        transform: translateY(0px) translateX(0px);
+      }
+      50% {
+        transform: translateY(-2.5px) translateX(1.5px);
+      }
+    }
+    .animated-student-name {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6, #60a5fa, #4f46e5, #1e40af, #2563eb);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      animation: nameGradientShift 3.5s ease infinite, nameFloatMove 5s ease-in-out infinite;
+      display: inline-block;
+      font-weight: 900;
+      will-change: transform, background-position;
+    }
+  </style>
+</head>
+<body class="min-h-full text-slate-800 antialiased pb-28">
+
+  <!-- Main Root Container for Dynamic JS Rendering -->
+  <div id="app" class="min-h-screen flex flex-col"></div>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4"></div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
