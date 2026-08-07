@@ -480,7 +480,15 @@ function sanitizeStudentsRoster() {
     state.students.forEach(s => {
       if (s && s.id && !state.deletedStudentIds.includes(s.id)) {
         const existing = studentMap.get(s.id) || {};
-        studentMap.set(s.id, { ...existing, ...s });
+        const mergedAttendance = {
+          ...(existing.attendanceRecords || {}),
+          ...(s.attendanceRecords || {})
+        };
+        studentMap.set(s.id, { 
+          ...existing, 
+          ...s,
+          attendanceRecords: mergedAttendance
+        });
       }
     });
   }
@@ -2668,7 +2676,6 @@ function getMonthYearDetails(monthYearStr) {
 
 function processDailyAutoAttendance() {
   const now = new Date();
-  const currentHours = now.getHours();
   
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
@@ -2676,40 +2683,33 @@ function processDailyAutoAttendance() {
   ];
   const currentMonthName = monthNames[now.getMonth()];
   const currentYear = now.getFullYear();
-  const todayNum = now.getDate(); // 7 for August 7, 2026
   const monthYearKey = `${currentMonthName} ${currentYear}`;
-
-  let updatedAny = false;
 
   (state.students || []).forEach(student => {
     student.attendanceRecords = student.attendanceRecords || {};
     
-    // Explicit Presets per User Request:
-    // 1 & 2: Academic Leave (Black)
-    student.attendanceRecords[`${monthYearKey}-1`] = "Academic Leave";
-    student.attendanceRecords[`${monthYearKey}-2`] = "Academic Leave";
+    // Only apply default preset values if attendance has not been marked yet
+    if (student.attendanceRecords[`${monthYearKey}-1`] === undefined) {
+      student.attendanceRecords[`${monthYearKey}-1`] = "Academic Leave";
+    }
+    if (student.attendanceRecords[`${monthYearKey}-2`] === undefined) {
+      student.attendanceRecords[`${monthYearKey}-2`] = "Academic Leave";
+    }
 
-    // 3 to 7: Present (Green)
-    student.attendanceRecords[`${monthYearKey}-3`] = "Present";
-    student.attendanceRecords[`${monthYearKey}-4`] = "Present";
-    student.attendanceRecords[`${monthYearKey}-5`] = "Present";
-    student.attendanceRecords[`${monthYearKey}-6`] = "Present";
-    student.attendanceRecords[`${monthYearKey}-7`] = "Present";
+    for (let d = 3; d <= 7; d++) {
+      if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
+        student.attendanceRecords[`${monthYearKey}-${d}`] = "Present";
+      }
+    }
 
-    // Days 8 to 31: Upcoming (White fill)
     for (let d = 8; d <= 31; d++) {
-      student.attendanceRecords[`${monthYearKey}-${d}`] = "Upcoming";
+      if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
+        student.attendanceRecords[`${monthYearKey}-${d}`] = "Upcoming";
+      }
     }
 
     recalculateAttendanceRate(student);
-    student.lastUpdated = Date.now();
-    saveStudentDoc(student);
-    updatedAny = true;
   });
-
-  if (updatedAny) {
-    saveState();
-  }
 }
 
 function generateAttendanceDaysGrid(student, monthYearStr) {
