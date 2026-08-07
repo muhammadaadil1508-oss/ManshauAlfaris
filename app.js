@@ -497,8 +497,6 @@ function sanitizeStudentsRoster() {
   uniqueStudents.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
   state.students = uniqueStudents;
 
-  syncGlobalAcademicLeaves();
-
   if (!state.students.some(s => s && s.id === state.currentStudentId)) {
     state.currentStudentId = state.students[0] ? state.students[0].id : "MSH-2026-0001";
   }
