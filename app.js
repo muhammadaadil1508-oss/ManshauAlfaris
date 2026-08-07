@@ -674,35 +674,37 @@ function renderApp() {
               </div>
             </div>
 
-            <!-- Bell -->
-            <button 
-              onclick="toggleModal('notification', true)"
-              class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 shadow-sm transition-all hover:scale-105 flex flex-shrink-0 items-center justify-center text-slate-600"
-              title="Notifications"
-            >
-              ${icon('bell', 'w-5 h-5 text-slate-600')}
-              ${unreadCount > 0 ? `
-                <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
-                  ${unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              ` : ''}
-            </button>
-
-            <!-- Profile Menu -->
-            <div class="relative">
-              <button
-                id="headerProfileBtn"
-                onclick="toggleHeaderProfileMenu()"
-                class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-slate-50 border-2 border-brand-500/80 shadow-sm transition-all hover:scale-105 p-0.5 flex flex-shrink-0 items-center justify-center group"
-                title="Profile & Settings"
+            <!-- Notification Bell & Profile Menu Group -->
+            <div class="flex items-center space-x-2">
+              <!-- Bell -->
+              <button 
+                onclick="toggleModal('notification', true)"
+                class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 shadow-sm transition-all hover:scale-105 flex flex-shrink-0 items-center justify-center text-slate-600"
+                title="Notifications"
               >
-                ${(state.role === 'admin' || state.role === 'controlpanel') 
-                  ? getAdminAvatarHtml("w-full h-full rounded-full") 
-                  : getStudentAvatarHtml(currentStudent, "w-full h-full rounded-full object-cover", "text-xs")}
-                <span class="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 border border-slate-200 shadow-sm text-slate-400 flex items-center justify-center">
-                  ${icon('chevron-down', 'w-2.5 h-2.5')}
-                </span>
+                ${icon('bell', 'w-5 h-5 text-slate-600')}
+                ${unreadCount > 0 ? `
+                  <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
+                    ${unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                ` : ''}
               </button>
+
+              <!-- Profile Menu -->
+              <div class="relative">
+                <button
+                  id="headerProfileBtn"
+                  onclick="toggleHeaderProfileMenu()"
+                  class="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white hover:bg-slate-50 border-2 border-brand-500/80 shadow-sm transition-all hover:scale-105 p-0.5 flex flex-shrink-0 items-center justify-center group"
+                  title="Profile & Settings"
+                >
+                  ${(state.role === 'admin' || state.role === 'controlpanel') 
+                    ? getAdminAvatarHtml("w-full h-full rounded-full") 
+                    : getStudentAvatarHtml(currentStudent, "w-full h-full rounded-full object-cover", "text-xs")}
+                  <span class="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 border border-slate-200 shadow-sm text-slate-400 flex items-center justify-center">
+                    ${icon('chevron-down', 'w-2.5 h-2.5')}
+                  </span>
+                </button>
 
               <div id="headerProfileMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-anti-gravity-lg border border-slate-100 overflow-hidden z-50 animate-fade-in-up">
                 <div class="p-3 bg-gradient-to-r from-brand-50/60 to-slate-50 border-b border-slate-100">
@@ -939,29 +941,27 @@ function renderStudentPortal(student, fin) {
       </div>
 
       <!-- STICKY FOOTER NAV -->
-      <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-200/80 py-2.5 sm:py-3 px-3 sm:px-8 shadow-anti-gravity-lg">
+      <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 py-3 sm:py-3.5 px-3 sm:px-8 shadow-anti-gravity-lg">
         <div class="max-w-4xl mx-auto w-full">
-          <div class="grid grid-cols-4 gap-2 sm:gap-3 w-full">
+          <div class="grid grid-cols-4 gap-2 sm:gap-3.5 w-full">
             ${[
-              { id: "dashboard", label: "Dashboard", labelMobile: "Dashboard", iconName: "layout-dashboard" },
-              { id: "examination", label: "Examination", labelMobile: "Exams", iconName: "file-spreadsheet" },
-              { id: "leaves", label: "Leaves", labelMobile: "Leaves", iconName: "plane-landing" },
-              { id: "bank", label: "Fund", labelMobile: "Fund", iconName: "wallet" }
+              { id: "dashboard", label: "Dashboard" },
+              { id: "examination", label: "Examination" },
+              { id: "leaves", label: "Leaves" },
+              { id: "bank", label: "Fund" }
             ].map(item => {
               const isActive = state.activeTab === item.id;
               return `
                 <button
                   onclick="setActiveTab('${item.id}')"
-                  class="w-full py-2.5 sm:py-3.5 px-2 sm:px-4 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center space-x-1.5 sm:space-x-2.5 border text-center ${
+                  class="w-full py-3 sm:py-3.5 px-2 sm:px-4 rounded-2xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 flex items-center justify-center border text-center tracking-tight ${
                     isActive
-                      ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/25 scale-[1.02]"
+                      ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/25 scale-[1.03]"
                       : "bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300"
                   }"
                 >
-                  ${icon(item.iconName, `w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-500"}`)}
                   <span class="truncate">
-                    <span class="hidden sm:inline">${item.label}</span>
-                    <span class="inline sm:hidden">${item.labelMobile}</span>
+                    ${item.label}
                   </span>
                 </button>
               `;
