@@ -989,6 +989,7 @@ function renderAdminPortal(student, fin) {
             { id: "leaves", label: "Leave Approvals", labelMobile: "Leaves", iconName: "check-square" },
             { id: "finance", label: "Institute Fund", labelMobile: "Fund", iconName: "landmark" },
             { id: "broadcast", label: "Broadcaster", labelMobile: "Broadcast", iconName: "radio" },
+            { id: "security", label: "Security & Passwords", labelMobile: "Security", iconName: "key" },
           ].map(item => {
             const isActive = state.adminActiveTab === item.id;
             return `
@@ -1028,6 +1029,7 @@ function renderActiveAdminNavView(student, fin) {
   if (state.adminActiveTab === "leaves") return renderAdminLeavesView(student);
   if (state.adminActiveTab === "finance") return renderAdminFinanceView(student, fin);
   if (state.adminActiveTab === "broadcast") return renderAdminBroadcastView();
+  if (state.adminActiveTab === "security") return renderAdminSecurityView();
   return renderAdminOverviewView(fin);
 }
 
@@ -2819,6 +2821,252 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   renderApp();
 }
 
+// --- ADMIN SECURITY & PASSWORDS PANEL ---
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function handleUpdateAdminCredentials(event) {
+  if (event) event.preventDefault();
+  const usernameInput = document.getElementById("adminSecurityUsername");
+  const passInput = document.getElementById("adminSecurityPassword");
+  const confirmInput = document.getElementById("adminSecurityPasswordConfirm");
+
+  if (!usernameInput || !passInput) return;
+
+  const newUsername = usernameInput.value.trim();
+  const newPass = passInput.value.trim();
+  const confirmPass = confirmInput ? confirmInput.value.trim() : newPass;
+
+  if (!newUsername || !newPass) {
+    showToast("Username and Password cannot be empty", "error");
+    return;
+  }
+
+  if (confirmInput && newPass !== confirmPass) {
+    showToast("Admin passwords do not match!", "error");
+    return;
+  }
+
+  state.adminCredentials = {
+    username: newUsername,
+    password: newPass
+  };
+
+  await saveState();
+  showToast("Admin credentials updated & synced to Firebase successfully!", "success");
+  renderApp();
+}
+
+async function handleUpdateControlPanelCredentials(event) {
+  if (event) event.preventDefault();
+  const usernameInput = document.getElementById("cpSecurityUsername");
+  const passInput = document.getElementById("cpSecurityPassword");
+  const confirmInput = document.getElementById("cpSecurityPasswordConfirm");
+
+  if (!usernameInput || !passInput) return;
+
+  const newUsername = usernameInput.value.trim();
+  const newPass = passInput.value.trim();
+  const confirmPass = confirmInput ? confirmInput.value.trim() : newPass;
+
+  if (!newUsername || !newPass) {
+    showToast("Username and Password cannot be empty", "error");
+    return;
+  }
+
+  if (confirmInput && newPass !== confirmPass) {
+    showToast("Control Panel passwords do not match!", "error");
+    return;
+  }
+
+  state.controlPanelCredentials = {
+    username: newUsername,
+    password: newPass
+  };
+
+  await saveState();
+  showToast("Control Panel credentials updated & synced to Firebase successfully!", "success");
+  renderApp();
+}
+
+function renderAdminSecurityView() {
+  return `
+    <div class="space-y-6">
+      <!-- Header Banner -->
+      <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-anti-gravity border border-white bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-400">
+              ${icon('key', 'w-6 h-6')}
+            </div>
+            <div>
+              <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-wider border border-emerald-400/30 inline-block mb-1">
+                SYSTEM SECURITY & CREDENTIALS
+              </span>
+              <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Access & Password Manager</h2>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-2xl border border-white/10 text-xs font-bold self-start sm:self-auto">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Realtime Synced to Firebase</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid for Admin & Control Panel Credentials -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 1. ADMIN CREDENTIALS CARD -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-anti-gravity border border-white bg-white">
+          <div class="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-slate-900 text-emerald-400 flex items-center justify-center shadow-md">
+              ${icon('shield', 'w-5 h-5')}
+            </div>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Administrator Credentials</h3>
+              <p class="text-xs text-slate-500 font-semibold">Change System Master login details</p>
+            </div>
+          </div>
+
+          <form onsubmit="handleUpdateAdminCredentials(event)" class="space-y-4">
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Admin Username</label>
+              <input 
+                type="text" 
+                id="adminSecurityUsername" 
+                value="${escapeHtml(state.adminCredentials.username || 'admin')}" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">New Admin Password</label>
+              <input 
+                type="password" 
+                id="adminSecurityPassword" 
+                value="${escapeHtml(state.adminCredentials.password || '')}" 
+                placeholder="Enter new password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Confirm Admin Password</label>
+              <input 
+                type="password" 
+                id="adminSecurityPasswordConfirm" 
+                value="${escapeHtml(state.adminCredentials.password || '')}" 
+                placeholder="Confirm new password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              class="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all hover:scale-[1.01] flex items-center justify-center space-x-2"
+            >
+              ${icon('save', 'w-4 h-4 text-emerald-400')}
+              <span>Save Admin Password</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 2. CONTROL PANEL CREDENTIALS CARD -->
+        <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-anti-gravity border border-white bg-white">
+          <div class="flex items-center space-x-3 border-b border-slate-100 pb-4 mb-6">
+            <div class="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center shadow-md shadow-brand-500/20">
+              ${icon('sliders', 'w-5 h-5')}
+            </div>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Control Panel Credentials</h3>
+              <p class="text-xs text-slate-500 font-semibold">Change Batch Controller login details</p>
+            </div>
+          </div>
+
+          <form onsubmit="handleUpdateControlPanelCredentials(event)" class="space-y-4">
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Control Panel Username</label>
+              <input 
+                type="text" 
+                id="cpSecurityUsername" 
+                value="${escapeHtml(state.controlPanelCredentials.username || 'control panel')}" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">New Control Panel Password</label>
+              <input 
+                type="password" 
+                id="cpSecurityPassword" 
+                value="${escapeHtml(state.controlPanelCredentials.password || '')}" 
+                placeholder="Enter new password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Confirm Control Panel Password</label>
+              <input 
+                type="password" 
+                id="cpSecurityPasswordConfirm" 
+                value="${escapeHtml(state.controlPanelCredentials.password || '')}" 
+                placeholder="Confirm new password" 
+                required 
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-extrabold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              class="w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-brand-500/20 transition-all hover:scale-[1.01] flex items-center justify-center space-x-2"
+            >
+              ${icon('save', 'w-4 h-4 text-white')}
+              <span>Save Control Panel Password</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. CURRENT CREDENTIALS STATUS TABLE -->
+      <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-anti-gravity border border-white bg-slate-50/70">
+        <div class="flex items-center space-x-3 mb-4">
+          ${icon('lock', 'w-5 h-5 text-slate-700')}
+          <h3 class="text-sm font-extrabold text-slate-900">Current Security Configuration Summary</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Admin Username</span>
+              <span class="font-extrabold text-slate-900 text-sm">${escapeHtml(state.adminCredentials.username)}</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">Active</span>
+          </div>
+
+          <div class="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Control Panel Username</span>
+              <span class="font-extrabold text-slate-900 text-sm">${escapeHtml(state.controlPanelCredentials.username)}</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // --- MARKSHEET PDF GENERATOR ---
 function downloadMarksheetPDF(studentId) {
   const student = state.students.find(s => s.id === studentId) || getCurrentStudent();
@@ -4136,6 +4384,8 @@ window.toggleAddSubjectAbsent = typeof toggleAddSubjectAbsent !== 'undefined' ? 
 window.toggleEditSubjectAbsent = typeof toggleEditSubjectAbsent !== 'undefined' ? toggleEditSubjectAbsent : null;
 window.changeBatchFilter = typeof changeBatchFilter !== 'undefined' ? changeBatchFilter : null;
 window.showAttendanceGraph = typeof showAttendanceGraph !== 'undefined' ? showAttendanceGraph : null;
+window.handleUpdateAdminCredentials = typeof handleUpdateAdminCredentials !== 'undefined' ? handleUpdateAdminCredentials : null;
+window.handleUpdateControlPanelCredentials = typeof handleUpdateControlPanelCredentials !== 'undefined' ? handleUpdateControlPanelCredentials : null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadState();
