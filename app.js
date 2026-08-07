@@ -164,8 +164,11 @@ const state = {
     editSubject: false,
     editBroadcast: false,
     editLeave: false,
-    roleAuth: false
+    roleAuth: false,
+    firebaseForm: false
   },
+  firebaseMessages: [],
+  latestTestResult: null,
   roleAuthTarget: 'admin',
   roleAuthError: '',
   addSubjectStudentId: "",
@@ -194,7 +197,7 @@ const firebaseConfig = {
 };
 
 let db;
-let rtdbRef, rtdbSet, rtdbGet, rtdbOnValue, rtdbRemove, rtdbOff;
+let rtdbRef, rtdbSet, rtdbGet, rtdbOnValue, rtdbRemove, rtdbOff, rtdbPush;
 let isBackendActive = false;
 
 function showToast(message, type = 'success') {
@@ -234,6 +237,7 @@ async function initFirebase() {
       rtdbOnValue = rtdbMod.onValue;
       rtdbRemove = rtdbMod.remove;
       rtdbOff = rtdbMod.off;
+      rtdbPush = rtdbMod.push;
       setupRealtimeSync();
       console.log("Firebase Realtime Database connected!");
       return;
@@ -256,6 +260,7 @@ async function initFirebase() {
     rtdbOnValue = rtdbMod.onValue;
     rtdbRemove = rtdbMod.remove;
     rtdbOff = rtdbMod.off;
+    rtdbPush = rtdbMod.push;
 
     setupRealtimeSync();
     console.log("Firebase Realtime Database initialized successfully!");
@@ -294,6 +299,8 @@ function saveStateLocalOnly() {
 let unsubscribeSystem = null;
 let unsubscribeAnnouncements = null;
 let unsubscribeUsers = null;
+let unsubscribeMessages = null;
+let unsubscribeTest = null;
 
 function setupRealtimeSync() {
   if (!db || !rtdbRef || !rtdbOnValue) return;
@@ -301,6 +308,8 @@ function setupRealtimeSync() {
   if (unsubscribeSystem) { try { unsubscribeSystem(); } catch(e){} }
   if (unsubscribeAnnouncements) { try { unsubscribeAnnouncements(); } catch(e){} }
   if (unsubscribeUsers) { try { unsubscribeUsers(); } catch(e){} }
+  if (unsubscribeMessages) { try { unsubscribeMessages(); } catch(e){} }
+  if (unsubscribeTest) { try { unsubscribeTest(); } catch(e){} }
 
   unsubscribeSystem = rtdbOnValue(rtdbRef(db, 'system/credentials'), (snapshot) => {
     if (snapshot.exists()) {
@@ -350,6 +359,38 @@ function setupRealtimeSync() {
     }
 
     handleIncomingUsersSync(dbStudents);
+  });
+
+  unsubscribeMessages = rtdbOnValue(rtdbRef(db, 'messages'), (snapshot) => {
+    const list = [];
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      Object.keys(data).forEach(id => {
+        list.push({ id, ...data[id] });
+      });
+      list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    }
+    state.firebaseMessages = list;
+    const container = document.getElementById("firebaseMessagesContainer");
+    if (container) {
+      container.innerHTML = renderFirebaseMessagesListHtml();
+    }
+  }, (error) => {
+    console.error("🔥 [Messages Listener Error]:", error);
+  });
+
+  unsubscribeTest = rtdbOnValue(rtdbRef(db, 'connection_test'), (snapshot) => {
+    if (snapshot.exists()) {
+      const testVal = snapshot.val();
+      console.log("🔥 [Firebase Realtime Listener] connection_test data:", testVal);
+      state.latestTestResult = testVal;
+      const testValEl = document.getElementById("fbTestConsoleOutput");
+      if (testValEl) {
+        testValEl.textContent = JSON.stringify(testVal, null, 2);
+      }
+    }
+  }, (error) => {
+    console.error("🔥 [Connection Test Listener Error]:", error);
   });
 }
 
@@ -610,26 +651,45 @@ function renderApp() {
             </div>
           </div>
 
-          <!-- Live Clock & Profile -->
-          <div class="flex items-center space-x-3 sm:space-x-4">
-            ${(state.role === 'admin' || state.role === 'controlpanel') ? `
-            <div id="dbStatusBadge" class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-[10px] font-extrabold border shadow-sm ${
-              isBackendActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-blue-700 border-blue-200"
-            }">
-              <span class="relative flex h-1.5 w-1.5">
-                ${isBackendActive
-                  ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>`
-                  : `<span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>`
-                }
-              </span>
-              <span>${isBackendActive ? "Firebase Synced" : "Local Storage Mode"}</span>
-            </div>
-            ` : ''}
+            <!-- Live Clock & Profile -->
+            <div class="flex items-center space-x-2 sm:space-x-3 flex-wrap">
+              <button 
+                onclick="testFirebaseConnection()" 
+                class="flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-2.5 py-1.5 rounded-full text-[10px] font-black shadow-md shadow-orange-500/20 transition-all hover:scale-105"
+                title="Test Firebase RTDB connection"
+              >
+                ${icon('radio', 'w-3 h-3 animate-pulse')}
+                <span>Test Connection</span>
+              </button>
 
-            <!-- 12-Hour Clock -->
-            <div class="hidden sm:flex items-center space-x-2 bg-slate-100/90 px-3.5 py-1.5 rounded-full text-xs font-extrabold text-slate-700 border border-slate-200/80 shadow-inner">
-              ${icon('clock', 'w-4 h-4 text-brand-600 animate-pulse')}
-              <span id="liveClockPill">${get12HourTimeString()}</span>
+              <button 
+                onclick="toggleModal('firebaseForm', true)" 
+                class="hidden sm:flex items-center space-x-1.5 bg-brand-600 hover:bg-brand-700 text-white px-2.5 py-1.5 rounded-full text-[10px] font-black shadow-md shadow-brand-500/20 transition-all hover:scale-105"
+                title="Open Firebase Contact Form"
+              >
+                ${icon('megaphone', 'w-3 h-3')}
+                <span>Firebase Form</span>
+              </button>
+
+              ${(state.role === 'admin' || state.role === 'controlpanel') ? `
+              <div id="dbStatusBadge" class="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-[10px] font-extrabold border shadow-sm ${
+                isBackendActive ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-blue-700 border-blue-200"
+              }">
+                <span class="relative flex h-1.5 w-1.5">
+                  ${isBackendActive
+                    ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>`
+                    : `<span class="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>`
+                  }
+                </span>
+                <span>${isBackendActive ? "Firebase Synced" : "Local Storage Mode"}</span>
+              </div>
+              ` : ''}
+
+              <!-- 12-Hour Clock -->
+              <div class="hidden sm:flex items-center space-x-2 bg-slate-100/90 px-3.5 py-1.5 rounded-full text-xs font-extrabold text-slate-700 border border-slate-200/80 shadow-inner">
+                ${icon('clock', 'w-4 h-4 text-brand-600 animate-pulse')}
+                <span id="liveClockPill">${get12HourTimeString()}</span>
+              </div>
             </div>
 
             <!-- Bell -->
@@ -2104,6 +2164,10 @@ function renderDashboardView(student, fin) {
       `;
     })()}
 
+    <div class="mb-6">
+      ${renderFirebaseHubComponent()}
+    </div>
+
     <div class="glass-card rounded-3xl p-6 shadow-anti-gravity anti-gravity-card border border-white mb-6">
       <div class="flex items-center space-x-3 mb-6">
         <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold">
@@ -2777,6 +2841,200 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   renderApp();
 }
 
+// --- FIREBASE TEST & USER FORM HELPERS ---
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function testFirebaseConnection() {
+  if (!db || !rtdbRef || !rtdbSet) {
+    showToast("Firebase is initializing, please wait...", "info");
+    return;
+  }
+
+  const testPath = 'connection_test/';
+  const testData = { connected: true, timestamp: Date.now() };
+
+  console.log("🚀 [Firebase Test] Writing to connection_test/:", testData);
+
+  try {
+    await rtdbSet(rtdbRef(db, testPath), testData);
+    showToast("✅ Firebase Connection Test Successful! Object written to connection_test/", "success");
+    console.log("✅ Successfully wrote test object to Firebase connection_test/", testData);
+  } catch (err) {
+    console.error("❌ Firebase Write Error:", err);
+    if (err.code === "PERMISSION_DENIED" || (err.message && err.message.includes("PERMISSION_DENIED"))) {
+      showToast("⚠️ Permission Denied! Update Firebase Rules to: {\".read\": true, \".write\": true}", "error");
+      console.warn("🔐 REALTIME DATABASE SECURITY RULES REMINDER:\nGo to Firebase Console -> Realtime Database -> Rules and set:\n{\n  \"rules\": {\n    \".read\": true,\n    \".write\": true\n  }\n}");
+    } else {
+      showToast("❌ Firebase Connection Error: " + err.message, "error");
+    }
+  }
+}
+
+async function submitFirebaseContactForm(event) {
+  if (event) event.preventDefault();
+  const nameInput = document.getElementById("fbFormName");
+  const emailInput = document.getElementById("fbFormEmail");
+  const messageInput = document.getElementById("fbFormMessage");
+
+  if (!nameInput || !emailInput || !messageInput) return;
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const message = messageInput.value.trim();
+
+  if (!name || !email || !message) {
+    showToast("Please fill in all fields (Name, Email, Message)", "error");
+    return;
+  }
+
+  if (!db || !rtdbRef || !rtdbPush) {
+    showToast("Firebase is not ready yet!", "error");
+    return;
+  }
+
+  try {
+    const messagesRef = rtdbRef(db, 'messages');
+    await rtdbPush(messagesRef, {
+      name: name,
+      email: email,
+      message: message,
+      timestamp: Date.now()
+    });
+
+    // Clear form inputs
+    nameInput.value = '';
+    emailInput.value = '';
+    messageInput.value = '';
+
+    showToast("🎉 Message saved successfully to Firebase Realtime Database!", "success");
+    console.log("✅ Message saved to Firebase path 'messages/' for:", name);
+
+    if (state.modals.firebaseForm) {
+      toggleModal('firebaseForm', false);
+    }
+  } catch (error) {
+    console.error("❌ Error saving message to Firebase:", error);
+    if (error.code === "PERMISSION_DENIED" || (error.message && error.message.includes("PERMISSION_DENIED"))) {
+      showToast("⚠️ Permission Denied! Update Firebase Rules to: {\".read\": true, \".write\": true}", "error");
+      console.warn("🔐 REALTIME DATABASE SECURITY RULES REMINDER:\nSet rules in Firebase Console -> Database -> Rules to:\n{\n  \"rules\": {\n    \".read\": true,\n    \".write\": true\n  }\n}");
+    } else {
+      showToast("❌ Database Error: " + error.message, "error");
+    }
+  }
+}
+
+function renderFirebaseMessagesListHtml() {
+  const messages = state.firebaseMessages || [];
+  if (messages.length === 0) {
+    return `
+      <div class="p-5 text-center text-slate-400 font-bold bg-slate-50/80 rounded-2xl border border-slate-100 text-xs">
+        No messages stored in <code class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">messages/</code> yet. Submit the form to add one!
+      </div>
+    `;
+  }
+
+  return messages.map(msg => `
+    <div class="p-3.5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all space-y-1">
+      <div class="flex items-center justify-between">
+        <span class="font-extrabold text-slate-900 text-xs sm:text-sm">${escapeHtml(msg.name || 'Anonymous')}</span>
+        <span class="text-[9px] font-bold text-slate-400">${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString() : 'Just now'}</span>
+      </div>
+      <p class="text-[10px] font-bold text-brand-600">${escapeHtml(msg.email || '')}</p>
+      <p class="text-xs text-slate-700 font-medium bg-slate-50 p-2 rounded-xl border border-slate-100 mt-1">${escapeHtml(msg.message || '')}</p>
+    </div>
+  `).join('');
+}
+
+function renderFirebaseHubComponent() {
+  return `
+    <div class="glass-card rounded-3xl p-6 sm:p-8 shadow-anti-gravity anti-gravity-card border border-white bg-gradient-to-br from-white via-slate-50 to-blue-50/30">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20 flex items-center justify-center font-bold">
+            ${icon('radio', 'w-5 h-5 animate-pulse')}
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">Firebase Realtime Database Hub</h3>
+            <p class="text-xs text-slate-500 font-semibold">Test connection (<code class="bg-slate-100 px-1 rounded text-[10px]">connection_test/</code>) & Submit live messages (<code class="bg-slate-100 px-1 rounded text-[10px]">messages/</code>)</p>
+          </div>
+        </div>
+
+        <button 
+          onclick="testFirebaseConnection()"
+          class="flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-5 py-3 rounded-2xl text-xs font-black shadow-md shadow-orange-500/25 transition-all hover:scale-105 self-start sm:self-auto"
+        >
+          ${icon('radio', 'w-4 h-4 animate-pulse')}
+          <span>Test Firebase Connection</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- USER INPUT FORM -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+          <div class="flex items-center space-x-2 border-b border-slate-100 pb-3">
+            ${icon('megaphone', 'w-4 h-4 text-brand-600')}
+            <h4 class="text-sm font-extrabold text-slate-900">Submit User Message</h4>
+          </div>
+
+          <form onsubmit="submitFirebaseContactForm(event)" class="space-y-3">
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">Name</label>
+              <input type="text" id="fbFormName" placeholder="Your Full Name" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">Email</label>
+              <input type="email" id="fbFormEmail" placeholder="name@example.com" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">Message</label>
+              <textarea id="fbFormMessage" rows="3" placeholder="Enter message to write to messages/..." required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-slate-900 focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 transition-all flex items-center justify-center space-x-2">
+              ${icon('plus', 'w-4 h-4')}
+              <span>Save Message to Firebase</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- REAL-TIME MESSAGES FEED & TEST OUTPUT -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+              <div class="flex items-center space-x-2">
+                ${icon('activity', 'w-4 h-4 text-emerald-600')}
+                <h4 class="text-sm font-extrabold text-slate-900">Real-Time Feed (<code class="text-xs bg-slate-100 text-slate-700 px-1 py-0.5 rounded">messages/</code>)</h4>
+              </div>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Live RTDB</span>
+            </div>
+
+            <div id="firebaseMessagesContainer" class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+              ${renderFirebaseMessagesListHtml()}
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100">
+            <p class="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider mb-1">Live Connection Test Console Output (<code class="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[9px]">connection_test/</code>):</p>
+            <pre id="fbTestConsoleOutput" class="bg-slate-900 text-emerald-400 font-mono text-[10px] p-2.5 rounded-xl overflow-x-auto max-h-20">${
+              state.latestTestResult ? JSON.stringify(state.latestTestResult, null, 2) : '// Click "Test Firebase Connection" to trigger live write & read'
+            }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // --- MARKSHEET PDF GENERATOR ---
 function downloadMarksheetPDF(studentId) {
   const student = state.students.find(s => s.id === studentId) || getCurrentStudent();
@@ -2856,6 +3114,57 @@ function downloadMarksheetPDF(studentId) {
 // --- MODALS RENDERER ---
 function renderModals() {
   let html = '';
+
+  if (state.modals.firebaseForm) {
+    html += `
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-sky-400 text-white shadow-md flex items-center justify-center">
+                ${icon('megaphone', 'w-5 h-5')}
+              </div>
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900">Firebase Realtime Form</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Save data to RTDB messages/</p>
+              </div>
+            </div>
+            <button onclick="toggleModal('firebaseForm', false)" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
+              ${icon('x', 'w-5 h-5')}
+            </button>
+          </div>
+
+          <form onsubmit="submitFirebaseContactForm(event)" class="space-y-4">
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Full Name</label>
+              <input type="text" id="fbFormName" placeholder="e.g. Ali Khan" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Email Address</label>
+              <input type="email" id="fbFormEmail" placeholder="ali@example.com" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-extrabold uppercase text-slate-500 mb-1">Message</label>
+              <textarea id="fbFormMessage" rows="3" placeholder="Write your message here..." required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-xs sm:text-sm text-slate-900 shadow-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+            </div>
+
+            <div class="flex items-center space-x-3 pt-2">
+              <button type="submit" class="flex-1 py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2">
+                ${icon('plus', 'w-4 h-4 text-white')}
+                <span>Submit to Firebase</span>
+              </button>
+              <button type="button" onclick="testFirebaseConnection()" class="py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center space-x-2">
+                ${icon('radio', 'w-4 h-4')}
+                <span>Test Connection</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `;
+  }
 
   if (state.modals.roleAuth) {
     const isAdmin = state.roleAuthTarget === 'admin';
@@ -4092,6 +4401,8 @@ window.openAddSubjectModal = typeof openAddSubjectModal !== 'undefined' ? openAd
 window.handleCreateSubject = typeof handleCreateSubject !== 'undefined' ? handleCreateSubject : null;
 window.toggleAddSubjectAbsent = typeof toggleAddSubjectAbsent !== 'undefined' ? toggleAddSubjectAbsent : null;
 window.toggleEditSubjectAbsent = typeof toggleEditSubjectAbsent !== 'undefined' ? toggleEditSubjectAbsent : null;
+window.testFirebaseConnection = typeof testFirebaseConnection !== 'undefined' ? testFirebaseConnection : null;
+window.submitFirebaseContactForm = typeof submitFirebaseContactForm !== 'undefined' ? submitFirebaseContactForm : null;
 window.changeBatchFilter = typeof changeBatchFilter !== 'undefined' ? changeBatchFilter : null;
 window.showAttendanceGraph = typeof showAttendanceGraph !== 'undefined' ? showAttendanceGraph : null;
 
