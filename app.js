@@ -941,12 +941,12 @@ function renderStudentPortal(student, fin) {
       </div>
 
       <!-- STICKY FOOTER NAV -->
-      <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 py-3 sm:py-3.5 px-3 sm:px-8 shadow-anti-gravity-lg">
+      <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 py-3 sm:py-3.5 px-2 sm:px-8 shadow-anti-gravity-lg">
         <div class="max-w-4xl mx-auto w-full">
-          <div class="grid grid-cols-4 gap-2 sm:gap-3.5 w-full">
+          <div class="grid grid-cols-4 gap-1.5 sm:gap-3.5 w-full">
             ${[
               { id: "dashboard", label: "Dashboard" },
-              { id: "examination", label: "Examination" },
+              { id: "examination", label: "Exam" },
               { id: "leaves", label: "Leaves" },
               { id: "bank", label: "Fund" }
             ].map(item => {
@@ -954,13 +954,13 @@ function renderStudentPortal(student, fin) {
               return `
                 <button
                   onclick="setActiveTab('${item.id}')"
-                  class="w-full py-3 sm:py-3.5 px-2 sm:px-4 rounded-2xl font-black text-sm sm:text-base md:text-lg transition-all duration-300 flex items-center justify-center border text-center tracking-tight ${
+                  class="w-full py-3 sm:py-3.5 px-1 sm:px-4 rounded-2xl font-black text-xs sm:text-base md:text-lg transition-all duration-300 flex items-center justify-center border text-center tracking-tight ${
                     isActive
                       ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/25 scale-[1.03]"
                       : "bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300"
                   }"
                 >
-                  <span class="truncate">
+                  <span class="whitespace-nowrap">
                     ${item.label}
                   </span>
                 </button>
