@@ -1053,10 +1053,9 @@ function renderActiveAdminNavView(student, fin) {
 
 // --- STUDENT ACCOUNTS ROSTER ---
 function renderStudentAccountsRosterComponent() {
-  const adminStudents = (state.students || []).filter(s => (s.class || "Genesis 01") !== "Genesis 01");
   const classMap = {};
-  adminStudents.forEach(s => {
-    const cls = s.class || "Genesis 02";
+  (state.students || []).forEach(s => {
+    const cls = s.class || "Genesis 01";
     if (!classMap[cls]) classMap[cls] = [];
     classMap[cls].push(s);
   });
@@ -1067,7 +1066,7 @@ function renderStudentAccountsRosterComponent() {
     <div class="glass-card p-4 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Registered Student Users (${adminStudents.length})</h3>
+          <h3 class="text-sm font-extrabold text-slate-900">Registered Student Users (${state.students.length})</h3>
         </div>
         <button onclick="toggleModal('addStudent', true)" class="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all hover:scale-105 self-start sm:self-auto">
           ${icon('userPlus', 'w-3.5 h-3.5')}
@@ -1202,9 +1201,6 @@ function calculateLiveAverageAttendance() {
 
 // --- ADMIN OVERVIEW ---
 function renderAdminOverviewView(fin) {
-  const adminStudents = (state.students || []).filter(s => (s.class || "Genesis 01") !== "Genesis 01");
-  const adminLeavesCount = adminStudents.reduce((acc, s) => acc + (s.leaves || []).length, 0);
-
   return `
     <div class="space-y-4">
       <div class="p-5 rounded-3xl bg-slate-900 text-white shadow-anti-gravity">
@@ -1227,11 +1223,11 @@ function renderAdminOverviewView(fin) {
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
             <p class="text-[10px] uppercase font-bold text-slate-400">Active Students</p>
-            <p class="text-xl font-black text-white mt-0.5">${adminStudents.length} Accounts</p>
+            <p class="text-xl font-black text-white mt-0.5">${state.students.length} Accounts</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
             <p class="text-[10px] uppercase font-bold text-slate-400">Total Requested Leaves</p>
-            <p class="text-xl font-black text-amber-400 mt-0.5">${adminLeavesCount} Total</p>
+            <p class="text-xl font-black text-amber-400 mt-0.5">${state.students.reduce((acc, s) => acc + (s.leaves || []).length, 0)} Total</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
             <p class="text-[10px] uppercase font-bold text-slate-400">Total Collections</p>
@@ -4272,16 +4268,7 @@ function changeBatchFilter(batch) {
 
 function renderBatchAndStudentSelectorHtml(currentSelectedStudentId, onStudentChangeCall) {
   const isControlPanel = state.role === 'controlpanel';
-  const isAdmin = state.role === 'admin';
-  const availableClasses = [...new Set(state.students.map(s => s.class || 'Genesis 01'))];
-  const adminClasses = availableClasses.filter(c => c !== 'Genesis 01');
-
-  const currentBatch = isControlPanel 
-    ? "Genesis 01" 
-    : isAdmin 
-      ? (adminClasses.includes(state.selectedBatchFilter) ? state.selectedBatchFilter : (adminClasses[0] || 'Genesis 02'))
-      : (state.selectedBatchFilter || "Genesis 01");
-
+  const currentBatch = isControlPanel ? "Genesis 01" : (state.selectedBatchFilter || "Genesis 01");
   const filteredStudents = state.students.filter(s => (s.class || 'Genesis 01') === currentBatch);
   
   return `
@@ -4292,9 +4279,8 @@ function renderBatchAndStudentSelectorHtml(currentSelectedStudentId, onStudentCh
         </span>
       ` : `
         <select onchange="changeBatchFilter(this.value)" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-brand-600 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer">
-          ${(isAdmin ? adminClasses : availableClasses).map(cls => `
-            <option value="${cls}" ${currentBatch === cls ? 'selected' : ''}>${cls}</option>
-          `).join('')}
+          <option value="Genesis 01" ${currentBatch === 'Genesis 01' ? 'selected' : ''}>Genesis 01</option>
+          <option value="Genesis 02" ${currentBatch === 'Genesis 02' ? 'selected' : ''}>Genesis 02</option>
         </select>
       `}
 
