@@ -1581,36 +1581,36 @@ function renderControlPanelPortal() {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Genesis 01 Users</p>
-            <p class="text-3xl font-black mt-1">${totalGenesis01Count}</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Genesis 01 Users</p>
+            <p class="text-3xl font-extrabold text-slate-900 mt-1">${totalGenesis01Count}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('users', 'w-6 h-6')}</div>
+          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">${icon('users', 'w-6 h-6')}</div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Present Today</p>
-            <p class="text-3xl font-black mt-1">${presentTodayCount}</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
+            <p class="text-3xl font-extrabold text-slate-900 mt-1">${presentTodayCount}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('user-check', 'w-6 h-6')}</div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50/80 border border-emerald-100/80 flex items-center justify-center text-emerald-600">${icon('user-check', 'w-6 h-6')}</div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">On Leave / Absent</p>
-            <p class="text-3xl font-black mt-1">${absentTodayCount}</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">On Leave / Absent</p>
+            <p class="text-3xl font-extrabold text-slate-900 mt-1">${absentTodayCount}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('clock', 'w-6 h-6')}</div>
+          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">${icon('clock', 'w-6 h-6')}</div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Total Batch Fund</p>
-            <p class="text-2xl font-black mt-1">${formatINR(totalBatchFund)}</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Batch Fund</p>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">${formatINR(totalBatchFund)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('wallet', 'w-6 h-6')}</div>
+          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">${icon('wallet', 'w-6 h-6')}</div>
         </div>
       </div>
 
