@@ -1922,10 +1922,14 @@ function renderControlPanelPortal() {
           <select onchange="changeSelectedSemester(this.value)" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 shadow-sm">
             ${["Sem 1", "Sem 2", "Sem 3", "Sem 4"].map(sem => `
               <option value="${sem}" ${state.selectedSem === sem ? 'selected' : ''}>${sem}</option>
-            <button onclick="openAddSubjectModal('${cpStudent.id}')" class="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
+            `).join('')}
+          </select>
+
+          <button onclick="openAddSubjectModal('${cpStudent.id}')" class="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
             ${icon('plus', 'w-3.5 h-3.5')}
             <span>Add Subject</span>
           </button>
+
         </div>
       </div>
 
@@ -2029,8 +2033,10 @@ function renderControlPanelPortal() {
 
       ${renderSemesterRankHoldersComponent(state.selectedSem)}
     </div>
+  `;
 
   return `
+
     <div class="max-w-7xl mx-auto w-full">
       <div class="w-full">
         ${cpTab === 'overview' ? overviewSection : cpTab === 'fund' ? fundSection : cpTab === 'marks' ? marksSection : attendanceSection}
