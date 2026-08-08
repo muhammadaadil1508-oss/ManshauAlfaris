@@ -778,7 +778,8 @@ function renderApp() {
       </header>
 
       <!-- Main Stage -->
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-4 sm:pb-6">
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 sm:pb-24">
+
 
 
         ${
