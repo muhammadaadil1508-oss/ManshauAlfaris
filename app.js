@@ -4411,26 +4411,27 @@ function renderBatchAndStudentSelectorHtml(currentSelectedStudentId, onStudentCh
   const filteredStudents = state.students.filter(s => (s.class || 'Genesis 01') === currentBatch);
   
   return `
-    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+    <div class="flex items-center space-x-2 flex-wrap gap-y-1.5 max-w-full">
       ${isControlPanel ? `
         <span class="px-3 py-2 bg-brand-50 border border-brand-200 text-brand-700 rounded-xl text-xs font-black">
           Genesis 01
         </span>
       ` : `
-        <select onchange="changeBatchFilter(this.value)" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-brand-600 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer">
+        <select onchange="changeBatchFilter(this.value)" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-brand-600 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer max-w-full truncate">
           ${(isAdmin ? adminClasses : availableClasses).map(cls => `
             <option value="${cls}" ${currentBatch === cls ? 'selected' : ''}>${cls}</option>
           `).join('')}
         </select>
       `}
 
-      <select onchange="${onStudentChangeCall}" class="p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer">
+      <select onchange="${onStudentChangeCall}" class="p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer max-w-full truncate">
         ${filteredStudents.map(s => `
           <option value="${s.id}" ${s.id === currentSelectedStudentId ? 'selected' : ''}>${s.name}</option>
         `).join('')}
       </select>
     </div>
   `;
+
 }
 
 function editExamScoreForStudent(studentId, examIdentifier) {
