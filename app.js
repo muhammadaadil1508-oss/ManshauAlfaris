@@ -2231,10 +2231,12 @@ function renderExaminationView(student) {
               </select>
             </div>
 
-            <button onclick="openAddSubjectModal('${student.id}')" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
-              ${icon('plus', 'w-3.5 h-3.5')}
-              <span>Add Subject</span>
-            </button>
+            ${(state.role === 'admin' || state.role === 'controlpanel') ? `
+              <button onclick="openAddSubjectModal('${student.id}')" class="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
+                ${icon('plus', 'w-3.5 h-3.5')}
+                <span>Add Subject</span>
+              </button>
+            ` : ''}
           </div>
         </div>
 
