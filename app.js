@@ -1208,7 +1208,13 @@ function calculateLiveAverageAttendance() {
 // --- ADMIN OVERVIEW ---
 function renderAdminOverviewView(fin) {
   const adminStudents = (state.students || []).filter(s => (s.class || "Genesis 01") !== "Genesis 01");
-  const adminLeavesCount = adminStudents.reduce((acc, s) => acc + (s.leaves || []).length, 0);
+  const totalStudentsCount = adminStudents.length;
+  const presentTodayCount = adminStudents.filter(s => s.status === 'Present').length;
+  const absentTodayCount = totalStudentsCount - presentTodayCount;
+  const totalBatchFund = adminStudents.reduce((acc, s) => {
+    const f = getFinancials(s);
+    return acc + (f.totalCredits - f.totalDebits);
+  }, 0);
 
   return `
     <div class="space-y-4">
@@ -1231,20 +1237,20 @@ function renderAdminOverviewView(fin) {
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Genesis 02 Students</p>
-            <p class="text-xl font-black text-white mt-0.5">${adminStudents.length} Accounts</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">Genesis 02 Users</p>
+            <p class="text-xl font-black text-white mt-0.5">${totalStudentsCount}</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Total Requested Leaves</p>
-            <p class="text-xl font-black text-amber-400 mt-0.5">${adminLeavesCount} Total</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">Present Today</p>
+            <p class="text-xl font-black text-emerald-400 mt-0.5">${presentTodayCount}</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Total Collections</p>
-            <p class="text-xl font-black text-emerald-400 mt-0.5">${formatINR(fin.totalCredits)}</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">On Leave / Absent</p>
+            <p class="text-xl font-black text-amber-400 mt-0.5">${absentTodayCount}</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Average Attendance</p>
-            <p class="text-xl font-black text-sky-400 mt-0.5">${calculateLiveAverageAttendance()}</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">Total Batch Fund</p>
+            <p class="text-xl font-black text-sky-400 mt-0.5">${formatINR(totalBatchFund)}</p>
           </div>
         </div>
       </div>
