@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manshau-alfaris-cache-v2';
+const CACHE_NAME = 'manshau-alfaris-cache-v3';
 
 // Core local static assets to cache on install for offline access
 const STATIC_ASSETS = [
@@ -18,7 +18,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching core PWA static assets');
+      console.log('[Service Worker] Pre-caching core PWA static assets:', CACHE_NAME);
       return cache.addAll(STATIC_ASSETS);
     })
   );
