@@ -778,7 +778,8 @@ function renderApp() {
       </header>
 
       <!-- Main Stage -->
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 pb-36">
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-16 sm:pb-20">
+
         ${
           state.role === "student" ? renderStudentPortal(currentStudent, fin) :
           state.role === "controlpanel" ? renderControlPanelPortal() :
