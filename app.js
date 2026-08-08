@@ -2022,7 +2022,12 @@ async function cpDeleteTransaction(studentId, index) {
 }
 
 function renderAdminFinanceView(student, fin) {
-  const netBalance = fin.totalCredits - fin.totalDebits;
+  const adminStudents = state.students.filter(s => (s.class || 'Genesis 01') !== 'Genesis 01');
+  const targetStudent = (student && (student.class || 'Genesis 01') !== 'Genesis 01')
+    ? student 
+    : (adminStudents[0] || student);
+  const targetFin = getFinancials(targetStudent);
+  const netBalance = targetFin.totalCredits - targetFin.totalDebits;
 
   return `
     <div class="space-y-6">
@@ -2034,16 +2039,14 @@ function renderAdminFinanceView(student, fin) {
           <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Institute Fund</h2>
         </div>
 
-        <select onchange="switchStudentAccount(this.value)" class="p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 shadow-sm focus:ring-2 focus:ring-brand-500 cursor-pointer">
-          ${state.students.map(s => `<option value="${s.id}" ${s.id === student.id ? 'selected' : ''}>${s.name} (${s.class || 'Genesis 01'})</option>`).join('')}
-        </select>
+        ${renderBatchAndStudentSelectorHtml(targetStudent.id, 'switchStudentAccount(this.value)')}
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash In</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalCredits)}</p>
+            <p class="text-3xl font-black mt-1">${formatINR(targetFin.totalCredits)}</p>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
             ${icon('arrow-down-left', 'w-6 h-6')}
@@ -2053,7 +2056,7 @@ function renderAdminFinanceView(student, fin) {
         <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash Out</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalDebits)}</p>
+            <p class="text-3xl font-black mt-1">${formatINR(targetFin.totalDebits)}</p>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
             ${icon('arrow-up-right', 'w-6 h-6')}
@@ -2074,10 +2077,10 @@ function renderAdminFinanceView(student, fin) {
       <div class="glass-card p-6 rounded-3xl shadow-anti-gravity border border-white">
         <h3 class="text-base font-extrabold text-slate-900 mb-4 flex items-center space-x-2">
           ${icon('landmark', 'w-5 h-5 text-emerald-600')}
-          <span>Add Transaction for ${student.name}</span>
+          <span>Add Transaction for ${targetStudent.name}</span>
         </h3>
 
-        <form onsubmit="handleAdminInjectTxnForStudent(event, '${student.id}')" class="space-y-3 text-xs">
+        <form onsubmit="handleAdminInjectTxnForStudent(event, '${targetStudent.id}')" class="space-y-3 text-xs">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Transaction Type</label>
             <select id="adminTxnType" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-bold">
@@ -2103,11 +2106,11 @@ function renderAdminFinanceView(student, fin) {
       </div>
 
       <div class="glass-card p-6 rounded-3xl shadow-anti-gravity border border-white">
-        <h3 class="text-base font-extrabold text-slate-900 mb-4">${student.name}'s Fund History</h3>
+        <h3 class="text-base font-extrabold text-slate-900 mb-4">${targetStudent.name}'s Fund History</h3>
         <div class="space-y-3 text-xs max-h-[400px] overflow-y-auto pr-1">
-          ${(!student.transactions || student.transactions.length === 0) ? `
-            <p class="text-slate-400 font-bold text-center py-8">No transactions recorded for ${student.name}.</p>
-          ` : student.transactions.map((t, tIdx) => `
+          ${(!targetStudent.transactions || targetStudent.transactions.length === 0) ? `
+            <p class="text-slate-400 font-bold text-center py-8">No transactions recorded for ${targetStudent.name}.</p>
+          ` : targetStudent.transactions.map((t, tIdx) => `
             <div class="p-3.5 rounded-2xl bg-white border border-slate-100 flex items-center justify-between shadow-xs gap-2">
               <div class="flex-1 min-w-0">
                 <p class="font-bold text-slate-800 truncate">${t.description || (t.type === 'Credit' ? 'Cash In' : 'Cash Out')}</p>
@@ -2117,7 +2120,7 @@ function renderAdminFinanceView(student, fin) {
                 <span class="font-black text-sm ${t.type === 'Credit' ? 'text-emerald-600' : 'text-rose-600'}">
                   ${t.type === 'Credit' ? '+' : '-'}${formatINR(t.amount)}
                 </span>
-                <button onclick="deleteTxnForStudent('${student.id}', ${tIdx})" class="p-1.5 rounded-lg hover:bg-rose-50 text-rose-400 hover:text-rose-600 transition-colors" title="Delete">
+                <button onclick="deleteTxnForStudent('${targetStudent.id}', ${tIdx})" class="p-1.5 rounded-lg hover:bg-rose-50 text-rose-400 hover:text-rose-600 transition-colors" title="Delete">
                   ${icon('trash-2', 'w-3.5 h-3.5')}
                 </button>
               </div>
