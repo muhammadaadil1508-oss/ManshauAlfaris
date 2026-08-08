@@ -1563,54 +1563,40 @@ function renderControlPanelPortal() {
   }, 0);
 
   const overviewSection = `
-    <div class="space-y-6">
-      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-anti-gravity border border-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold border border-indigo-100 uppercase tracking-wider">
-            GENESIS 01 BATCH CONTROL & USER MANAGEMENT
-          </span>
-          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Genesis 01 Overview & User Control</h2>
-          <p class="text-xs text-slate-500 font-semibold mt-1">Manage and monitor all ${totalGenesis01Count} Genesis 01 student user accounts.</p>
-        </div>
-        <div class="flex items-center gap-2.5">
-          <button onclick="toggleModal('addStudent', true)" class="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
-            ${icon('userPlus', 'w-4 h-4 text-white')}
-            <span>Add Genesis 01 User</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
+    <div class="space-y-4">
+      <div class="p-5 rounded-3xl bg-slate-900 text-white shadow-anti-gravity">
+        <div class="flex items-center justify-between">
           <div>
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Genesis 01 Users</p>
-            <p class="text-3xl font-extrabold text-slate-900 mt-1">${totalGenesis01Count}</p>
+            <span class="bg-brand-500/20 text-sky-400 text-[10px] px-2.5 py-0.5 rounded-full font-bold border border-sky-400/30 uppercase tracking-wider">
+              GENESIS 01 BATCH CONTROL
+            </span>
+            <h2 class="text-xl sm:text-2xl font-black tracking-tight mt-1">Genesis 01 Overview</h2>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">${icon('users', 'w-6 h-6')}</div>
+          <div class="flex items-center gap-2.5">
+            <button onclick="toggleModal('addStudent', true)" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
+              ${icon('userPlus', 'w-3.5 h-3.5 text-white')}
+              <span>Add Genesis 01 User</span>
+            </button>
+          </div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
-          <div>
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Present Today</p>
-            <p class="text-3xl font-extrabold text-slate-900 mt-1">${presentTodayCount}</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+          <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Genesis 01 Users</p>
+            <p class="text-xl font-black text-white mt-0.5">${totalGenesis01Count} Accounts</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50/80 border border-emerald-100/80 flex items-center justify-center text-emerald-600">${icon('user-check', 'w-6 h-6')}</div>
-        </div>
-
-        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
-          <div>
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">On Leave / Absent</p>
-            <p class="text-3xl font-extrabold text-slate-900 mt-1">${absentTodayCount}</p>
+          <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Present Today</p>
+            <p class="text-xl font-black text-emerald-400 mt-0.5">${presentTodayCount}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500">${icon('clock', 'w-6 h-6')}</div>
-        </div>
-
-        <div class="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between transition-all hover:shadow-md">
-          <div>
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Batch Fund</p>
-            <p class="text-2xl font-extrabold text-slate-900 mt-1">${formatINR(totalBatchFund)}</p>
+          <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
+            <p class="text-[10px] uppercase font-bold text-slate-400">On Leave / Absent</p>
+            <p class="text-xl font-black text-amber-400 mt-0.5">${absentTodayCount}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600">${icon('wallet', 'w-6 h-6')}</div>
+          <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
+            <p class="text-[10px] uppercase font-bold text-slate-400">Total Batch Fund</p>
+            <p class="text-xl font-black text-sky-400 mt-0.5">${formatINR(totalBatchFund)}</p>
+          </div>
         </div>
       </div>
 
@@ -1618,7 +1604,6 @@ function renderControlPanelPortal() {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <h3 class="text-base font-extrabold text-slate-900">Genesis 01 Registered User Accounts</h3>
-            <p class="text-xs text-slate-400 font-medium">Control credentials, edit profile information, toggle daily status, or manage fund and marks.</p>
           </div>
           <span class="px-3 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-xs rounded-full border border-indigo-100 self-start sm:self-auto">
             Genesis 01 Batch Control
@@ -1636,7 +1621,6 @@ function renderControlPanelPortal() {
                     ${getStudentAvatarHtml(s, "w-10 h-10 flex-shrink-0", "text-xs")}
                     <div class="min-w-0">
                       <p class="font-extrabold text-sm text-slate-900 truncate">${s.name}</p>
-                      <p class="text-[10px] text-slate-400 font-bold">${s.id} • ${s.program || s.class || 'Genesis 01'}</p>
                     </div>
                   </div>
                   <button onclick="toggleSpecificStudentStatus('${s.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-extrabold flex-shrink-0 ${s.status === 'Present' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}">
@@ -1698,7 +1682,6 @@ function renderControlPanelPortal() {
                         ${getStudentAvatarHtml(s, "w-8 h-8 flex-shrink-0", "text-[10px]")}
                         <div>
                           <p class="font-extrabold text-slate-900 text-xs">${s.name}</p>
-                          <p class="text-[10px] text-slate-400 font-semibold">${s.id} • ${s.phone || 'No phone'}</p>
                         </div>
                       </div>
                     </td>
