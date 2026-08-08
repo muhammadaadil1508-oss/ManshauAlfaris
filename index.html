@@ -203,8 +203,38 @@
   <!-- Application Logic (Loaded with defer for fast DOM parsing) -->
   <script src="app.js" defer></script>
 
-  <!-- Service Worker Registration for PWA -->
+  <!-- PWA Custom Install Banner -->
+  <div id="pwaInstallBanner" class="hidden fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 p-4 rounded-3xl glass-card border border-white/80 shadow-2xl transition-all duration-500">
+    <div class="flex items-start justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-800 to-brand-600 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20 flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+            <path d="M22 10v6"/>
+            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-900">Install MANSHAU App</h4>
+          <p class="text-[11px] text-slate-500 font-medium leading-tight">Add to Home Screen for fast offline access</p>
+        </div>
+      </div>
+      <button id="pwaCloseBtn" onclick="dismissPwaBanner()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mt-3 flex gap-2">
+      <button id="pwaInstallBtn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-2.5 px-3 rounded-xl text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-[1.02] flex items-center justify-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" y2="3"/></svg>
+        <span>Install App</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Service Worker & PWA Install Prompt Registration -->
   <script>
+    let deferredPrompt = null;
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -216,7 +246,45 @@
           });
       });
     }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner && !sessionStorage.getItem('pwaBannerDismissed')) {
+        banner.classList.remove('hidden');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const installBtn = document.getElementById('pwaInstallBtn');
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log(`[PWA] Install prompt outcome: ${outcome}`);
+          deferredPrompt = null;
+          const banner = document.getElementById('pwaInstallBanner');
+          if (banner) banner.classList.add('hidden');
+        });
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] Application installed successfully');
+      deferredPrompt = null;
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.add('hidden');
+    });
+
+    function dismissPwaBanner() {
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.classList.add('hidden');
+      sessionStorage.setItem('pwaBannerDismissed', 'true');
+    }
   </script>
 </body>
+
 
 </html>
