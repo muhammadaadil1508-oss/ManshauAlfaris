@@ -3958,6 +3958,10 @@ async function deleteStudentLeave(studentId, leaveId) {
 }
 
 function openAddSubjectModal(studentId) {
+  if (state.role !== 'admin' && state.role !== 'controlpanel') {
+    showToast("Adding subjects can only be done by Admin or Control Panel", "error");
+    return;
+  }
   state.addSubjectStudentId = studentId || state.currentStudentId;
   state.modals.addSubject = true;
   renderApp();
@@ -3990,6 +3994,10 @@ function toggleEditSubjectAbsent() {
 
 async function handleCreateSubject(e) {
   e.preventDefault();
+  if (state.role !== 'admin' && state.role !== 'controlpanel') {
+    showToast("Adding subjects can only be done by Admin or Control Panel", "error");
+    return;
+  }
   const nameInput = document.getElementById('addSubjectName');
   const marksInput = document.getElementById('addSubjectMarks');
   const absentCb = document.getElementById('addSubjectAbsent');
