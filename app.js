@@ -444,26 +444,7 @@ function handleIncomingUsersSync(dbStudents) {
 }
 
 function syncGlobalAcademicLeaves() {
-  const globalAcademicLeaveKeys = new Set();
-  (state.students || []).forEach(s => {
-    if (s && s.attendanceRecords) {
-      Object.entries(s.attendanceRecords).forEach(([key, val]) => {
-        if (val === "Academic Leave") {
-          globalAcademicLeaveKeys.add(key);
-        }
-      });
-    }
-  });
-
-  if (globalAcademicLeaveKeys.size > 0) {
-    (state.students || []).forEach(s => {
-      s.attendanceRecords = s.attendanceRecords || {};
-      globalAcademicLeaveKeys.forEach(key => {
-        s.attendanceRecords[key] = "Academic Leave";
-      });
-      recalculateAttendanceRate(s);
-    });
-  }
+  // Disabled global Academic Leave sync to allow independent attendance records for each user
 }
 
 function sanitizeStudentsRoster() {
@@ -2831,29 +2812,10 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   else if (current === "Academic Leave") next = "Upcoming";
   else if (current === "Upcoming" || current === "Holiday") next = "Present";
 
-  if (next === "Academic Leave") {
-    state.students.forEach(s => {
-      s.attendanceRecords = s.attendanceRecords || {};
-      s.attendanceRecords[dateKey] = "Academic Leave";
-      recalculateAttendanceRate(s);
-      s.lastUpdated = Date.now();
-      saveStudentDoc(s);
-    });
-    showToast(`Academic Leave applied for ${dateKey} on all students!`, "info");
-  } else if (current === "Academic Leave") {
-    state.students.forEach(s => {
-      s.attendanceRecords = s.attendanceRecords || {};
-      s.attendanceRecords[dateKey] = next;
-      recalculateAttendanceRate(s);
-      s.lastUpdated = Date.now();
-      saveStudentDoc(s);
-    });
-  } else {
-    student.attendanceRecords[dateKey] = next;
-    recalculateAttendanceRate(student);
-    student.lastUpdated = Date.now();
-    await saveStudentDoc(student);
-  }
+  student.attendanceRecords[dateKey] = next;
+  recalculateAttendanceRate(student);
+  student.lastUpdated = Date.now();
+  await saveStudentDoc(student);
 
   await saveState();
   renderApp();
