@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manshau-alfaris-cache-v1';
+const CACHE_NAME = 'manshau-alfaris-cache-v2';
 
 // Core local static assets to cache on install for offline access
 const STATIC_ASSETS = [
@@ -10,7 +10,8 @@ const STATIC_ASSETS = [
   './firebase-config.js',
   './og-banner.png',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/icon.svg'
 ];
 
 // Install Event - Pre-cache core static resources
@@ -19,8 +20,16 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching core PWA static assets');
       return cache.addAll(STATIC_ASSETS);
-    }).then(() => self.skipWaiting())
+    })
   );
+});
+
+// Message Event - Handle skipWaiting trigger from frontend update listener
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[Service Worker] Skip waiting message received - activating new SW version immediately');
+    self.skipWaiting();
+  }
 });
 
 // Activate Event - Clean up stale cache versions & claim clients
@@ -30,7 +39,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Removing old cache:', cache);
+            console.log('[Service Worker] Removing old cache version:', cache);
             return caches.delete(cache);
           }
         })
