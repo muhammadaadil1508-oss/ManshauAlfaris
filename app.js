@@ -129,7 +129,7 @@ const state = {
   fundDateFilter: "",
   
   currentStudentId: "MSH-2026-0001",
-  cpActiveTab: "fund",
+  cpActiveTab: "overview",
   cpSelectedStudentId: "MSH-2026-0001",
 
   // OFFICIAL INSTITUTE STUDENT ROSTER (Genesis 01 & Genesis 02 - 16 Students)
@@ -1550,8 +1550,188 @@ function renderControlPanelPortal() {
 
   const fin = getFinancials(cpStudent);
   const netBalance = fin.totalCredits - fin.totalDebits;
-  const cpTab = state.cpActiveTab || 'fund';
+  const cpTab = state.cpActiveTab || 'overview';
   const filterMonth = state.attendanceFilterMonth || 'August 2026';
+
+  // Summary Metrics for Genesis 01
+  const totalGenesis01Count = targetStudents.length;
+  const presentTodayCount = targetStudents.filter(s => s.status === 'Present').length;
+  const absentTodayCount = totalGenesis01Count - presentTodayCount;
+  const totalBatchFund = targetStudents.reduce((acc, s) => {
+    const f = getFinancials(s);
+    return acc + (f.totalCredits - f.totalDebits);
+  }, 0);
+
+  const overviewSection = `
+    <div class="space-y-6">
+      <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-anti-gravity border border-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold border border-indigo-100 uppercase tracking-wider">
+            GENESIS 01 BATCH CONTROL & USER MANAGEMENT
+          </span>
+          <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Genesis 01 Overview & User Control</h2>
+          <p class="text-xs text-slate-500 font-semibold mt-1">Manage and monitor all ${totalGenesis01Count} Genesis 01 student user accounts.</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button onclick="toggleModal('addStudent', true)" class="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
+            ${icon('userPlus', 'w-4 h-4 text-white')}
+            <span>Add Genesis 01 User</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Genesis 01 Users</p>
+            <p class="text-3xl font-black mt-1">${totalGenesis01Count}</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('users', 'w-6 h-6')}</div>
+        </div>
+
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Present Today</p>
+            <p class="text-3xl font-black mt-1">${presentTodayCount}</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('user-check', 'w-6 h-6')}</div>
+        </div>
+
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">On Leave / Absent</p>
+            <p class="text-3xl font-black mt-1">${absentTodayCount}</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('clock', 'w-6 h-6')}</div>
+        </div>
+
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Total Batch Fund</p>
+            <p class="text-2xl font-black mt-1">${formatINR(totalBatchFund)}</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('wallet', 'w-6 h-6')}</div>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 rounded-3xl shadow-anti-gravity border border-white space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">Genesis 01 Registered User Accounts</h3>
+            <p class="text-xs text-slate-400 font-medium">Control credentials, edit profile information, toggle daily status, or manage fund and marks.</p>
+          </div>
+          <span class="px-3 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-xs rounded-full border border-indigo-100 self-start sm:self-auto">
+            Genesis 01 Batch Control
+          </span>
+        </div>
+
+        <div class="md:hidden space-y-3">
+          ${targetStudents.map(s => {
+            const sFin = getFinancials(s);
+            const sNet = sFin.totalCredits - sFin.totalDebits;
+            return `
+              <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3 min-w-0">
+                    ${getStudentAvatarHtml(s, "w-10 h-10 flex-shrink-0", "text-xs")}
+                    <div class="min-w-0">
+                      <p class="font-extrabold text-sm text-slate-900 truncate">${s.name}</p>
+                      <p class="text-[10px] text-slate-400 font-bold">${s.id} • ${s.program || s.class || 'Genesis 01'}</p>
+                    </div>
+                  </div>
+                  <button onclick="toggleSpecificStudentStatus('${s.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-extrabold flex-shrink-0 ${s.status === 'Present' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}">
+                    ${s.status}
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-bold">
+                  <div>
+                    <span class="text-slate-400 text-[10px] uppercase block font-bold">Username</span>
+                    <span class="text-brand-600">${s.username}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400 text-[10px] uppercase block font-bold">Password</span>
+                    <span class="font-mono text-slate-700">${s.password}</span>
+                  </div>
+                  <div class="col-span-2 pt-1 border-t border-slate-200/60 flex justify-between items-center">
+                    <span class="text-slate-400 text-[10px] uppercase font-bold">Fund Balance:</span>
+                    <span class="font-black ${sNet >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${formatINR(sNet)}</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
+                  <button onclick="openEditStudentModal('${s.id}')" class="flex-1 py-2 px-3 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-extrabold text-xs text-center border border-brand-100 transition-colors">
+                    Edit Profile
+                  </button>
+                  <button onclick="state.cpSelectedStudentId='${s.id}'; state.cpActiveTab='fund'; renderApp();" class="flex-1 py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-extrabold text-xs text-center border border-indigo-100 transition-colors">
+                    View Fund
+                  </button>
+                  <button onclick="deleteStudentUser('${s.id}')" class="py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-xs text-center border border-rose-100 transition-colors">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="hidden md:block w-full overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
+                <th class="py-3 px-3">Student Name</th>
+                <th class="py-3 px-3">Username</th>
+                <th class="py-3 px-3">Password</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3 text-right">Net Balance</th>
+                <th class="py-3 px-3 text-right">User Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              ${targetStudents.map(s => {
+                const sFin = getFinancials(s);
+                const sNet = sFin.totalCredits - sFin.totalDebits;
+                return `
+                  <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-3 px-3 font-bold text-slate-800">
+                      <div class="flex items-center space-x-3">
+                        ${getStudentAvatarHtml(s, "w-8 h-8 flex-shrink-0", "text-[10px]")}
+                        <div>
+                          <p class="font-extrabold text-slate-900 text-xs">${s.name}</p>
+                          <p class="text-[10px] text-slate-400 font-semibold">${s.id} • ${s.phone || 'No phone'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-3 font-bold text-brand-600">${s.username}</td>
+                    <td class="py-3 px-3 font-mono text-slate-700 font-bold">${s.password}</td>
+                    <td class="py-3 px-3">
+                      <button onclick="toggleSpecificStudentStatus('${s.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm transition-all hover:scale-105 ${s.status === 'Present' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}">
+                        ${s.status}
+                      </button>
+                    </td>
+                    <td class="py-3 px-3 text-right font-black ${sNet >= 0 ? 'text-emerald-600' : 'text-rose-600'}">
+                      ${formatINR(sNet)}
+                    </td>
+                    <td class="py-3 px-3 text-right space-x-1.5">
+                      <button onclick="openEditStudentModal('${s.id}')" class="px-2.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-[11px] border border-brand-100 transition-colors">
+                        Edit
+                      </button>
+                      <button onclick="state.cpSelectedStudentId='${s.id}'; state.cpActiveTab='fund'; renderApp();" class="px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold text-[11px] border border-indigo-100 transition-colors">
+                        Fund
+                      </button>
+                      <button onclick="deleteStudentUser('${s.id}')" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[11px] border border-rose-100 transition-colors" title="Delete Student Account">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
 
   const fundSection = `
     <div class="space-y-6">
@@ -1644,12 +1824,6 @@ function renderControlPanelPortal() {
         <div>
           <span class="bg-amber-50 text-amber-600 text-xs px-3 py-1 rounded-full font-bold border border-amber-100 uppercase tracking-wider">ATTENDANCE REGISTER</span>
           <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Daily Attendance</h2>
-        </div>
-        <div>
-          <button onclick="markAllStudentsPresentToday()" class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-500/20 transition-all hover:scale-105 flex items-center space-x-2">
-            ${icon('check-circle', 'w-4 h-4 text-white')}
-            <span>Mark All Present Today</span>
-          </button>
         </div>
       </div>
 
@@ -1784,15 +1958,16 @@ function renderControlPanelPortal() {
   return `
     <div class="max-w-7xl mx-auto w-full">
       <div class="w-full">
-        ${cpTab === 'fund' ? fundSection : cpTab === 'marks' ? marksSection : attendanceSection}
+        ${cpTab === 'overview' ? overviewSection : cpTab === 'fund' ? fundSection : cpTab === 'marks' ? marksSection : attendanceSection}
       </div>
 
       <nav class="admin-sticky-footer fixed bottom-0 left-0 right-0 p-2.5 shadow-2xl flex justify-around items-center z-40 w-full">
         <div class="max-w-4xl mx-auto w-full flex justify-start sm:justify-around items-center overflow-x-auto scrollbar-none gap-2 px-2 py-0.5">
           ${[
-            { id: 'fund',       label: 'Institute Fund', labelMobile: 'Fund',       iconName: 'landmark'     },
-            { id: 'attendance', label: 'Attendance',     labelMobile: 'Attendance', iconName: 'check-square' },
-            { id: 'marks',      label: 'Mark Entry',     labelMobile: 'Marks',      iconName: 'bookOpen'     },
+            { id: 'overview',   label: 'Overview & Users', labelMobile: 'Overview',  iconName: 'users'        },
+            { id: 'fund',       label: 'Institute Fund',   labelMobile: 'Fund',       iconName: 'landmark'     },
+            { id: 'attendance', label: 'Attendance',       labelMobile: 'Attendance', iconName: 'check-square' },
+            { id: 'marks',      label: 'Mark Entry',       labelMobile: 'Marks',      iconName: 'bookOpen'     },
           ].map(item => {
             const isActive = cpTab === item.id;
             return `
@@ -2885,30 +3060,6 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   renderApp();
 }
 
-async function markAllStudentsPresentToday() {
-  const now = new Date();
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const currentMonthName = monthNames[now.getMonth()];
-  const currentYear = now.getFullYear();
-  const todayNum = now.getDate();
-  const dateKey = `${currentMonthName} ${currentYear}-${todayNum}`;
-
-  (state.students || []).forEach(student => {
-    if (!student.attendanceRecords) student.attendanceRecords = {};
-    student.attendanceRecords[dateKey] = "Present";
-    student.status = "Present";
-    recalculateAttendanceRate(student);
-    student.lastUpdated = Date.now();
-    saveStudentDoc(student);
-  });
-
-  await saveState();
-  showToast(`Marked TODAY (${dateKey}) as PRESENT for all students!`, "success");
-  renderApp();
-}
 
 // --- ADMIN SECURITY & PASSWORDS PANEL ---
 function escapeHtml(str) {
@@ -4491,7 +4642,7 @@ window.changeBatchFilter = typeof changeBatchFilter !== 'undefined' ? changeBatc
 window.showAttendanceGraph = typeof showAttendanceGraph !== 'undefined' ? showAttendanceGraph : null;
 window.handleUpdateAdminCredentials = typeof handleUpdateAdminCredentials !== 'undefined' ? handleUpdateAdminCredentials : null;
 window.handleUpdateControlPanelCredentials = typeof handleUpdateControlPanelCredentials !== 'undefined' ? handleUpdateControlPanelCredentials : null;
-window.markAllStudentsPresentToday = typeof markAllStudentsPresentToday !== 'undefined' ? markAllStudentsPresentToday : null;
+window.toggleSpecificStudentStatus = typeof toggleSpecificStudentStatus !== 'undefined' ? toggleSpecificStudentStatus : null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadState();
