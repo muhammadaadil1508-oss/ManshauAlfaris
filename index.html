@@ -31,6 +31,13 @@
   <meta name="twitter:description" content="Manshau Alfaris - Educational Institute Platform & Student Management Portal" />
   <meta name="twitter:image" content="https://manshau-alfaris.vercel.app/og-banner.png" />
   
+  <!-- DNS Prefetching for CDN Speed -->
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,19 +78,24 @@
     }
   </script>
 
-  <!-- Optional Chart.js for canvas rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- Client-side HTML-to-PDF Conversion Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- Cropper.js CDN for 1:1 Square Profile Photo Cropping -->
+  <!-- Non-blocking Defer Script Loading for Chart.js, HTML2PDF, and Cropper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" defer></script>
 
   <style>
+    html {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      scroll-behavior: smooth;
+    }
     body {
       background: radial-gradient(circle at 50% 0%, #f1f5f9 0%, #f8fafc 50%, #eff6ff 100%);
       min-height: 100vh;
       font-family: 'Plus Jakarta Sans', sans-serif;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
     .glass-card {
       background: rgba(255, 255, 255, 0.85);
@@ -121,6 +133,22 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    /* Mobile scrollbar styling for wide tables & modal contents */
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 5px;
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
     @keyframes nameGradientShift {
       0% {
@@ -163,7 +191,7 @@
   <!-- Toast Notification System -->
   <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full px-4"></div>
 
-  <!-- Application Logic -->
-  <script src="app.js"></script>
+  <!-- Application Logic (Loaded with defer for fast DOM parsing) -->
+  <script src="app.js" defer></script>
 </body>
 </html>

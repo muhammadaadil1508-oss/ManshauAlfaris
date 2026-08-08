@@ -1384,8 +1384,8 @@ function renderAdminAcademicsView(student) {
       </div>
 
       <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-3">
-        <div class="w-full overflow-hidden">
-          <table class="w-full text-left border-collapse text-xs">
+        <div class="w-full overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-xs min-w-[340px]">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
                 <th class="py-2 px-2">Subject</th>
@@ -2264,8 +2264,8 @@ function renderExaminationView(student) {
           </div>
         </div>
 
-        <div class="w-full overflow-hidden" id="marksheetPDFContent">
-          <table class="w-full text-left border-collapse text-xs">
+        <div class="w-full overflow-x-auto custom-scrollbar" id="marksheetPDFContent">
+          <table class="w-full text-left border-collapse text-xs min-w-[340px]">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
                 <th class="py-2.5 px-2">Subject</th>
@@ -3242,8 +3242,8 @@ function renderModals() {
     const subtitle = isAdmin ? 'System Control Access' : 'Genesis 01 Batch Control Access';
 
     html += `
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
           <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 rounded-2xl ${isAdmin ? 'bg-slate-900 text-emerald-400' : 'bg-brand-600 text-white'} shadow-md flex items-center justify-center">
@@ -3421,8 +3421,8 @@ function renderModals() {
   if (state.modals.leave) {
     const student = getCurrentStudent();
     html += `
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4 my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 class="text-base font-black text-slate-900">Apply Leave Request</h3>
             <button onclick="toggleModal('leave', false)" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
@@ -3493,8 +3493,8 @@ function renderModals() {
   if (state.modals.addSubject) {
     const s = state.students.find(st => st.id === state.addSubjectStudentId) || getCurrentStudent();
     html += `
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4 my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 class="text-base font-black text-slate-900">Add Subject</h3>
@@ -3550,8 +3550,8 @@ function renderModals() {
     const editExam = editS ? (editS.exams || [])[state.editSubjectIndex] : null;
     if (editS && editExam) {
       html += `
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4">
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4 my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 class="text-base font-black text-slate-900">Edit Subject Marks</h3>
