@@ -444,7 +444,26 @@ function handleIncomingUsersSync(dbStudents) {
 }
 
 function syncGlobalAcademicLeaves() {
-  // Disabled global Academic Leave sync to allow independent attendance records for each user
+  const globalAcademicLeaveKeys = new Set();
+  (state.students || []).forEach(s => {
+    if (s && s.attendanceRecords) {
+      Object.entries(s.attendanceRecords).forEach(([key, val]) => {
+        if (val === "Academic Leave") {
+          globalAcademicLeaveKeys.add(key);
+        }
+      });
+    }
+  });
+
+  if (globalAcademicLeaveKeys.size > 0) {
+    (state.students || []).forEach(s => {
+      s.attendanceRecords = s.attendanceRecords || {};
+      globalAcademicLeaveKeys.forEach(key => {
+        s.attendanceRecords[key] = "Academic Leave";
+      });
+      recalculateAttendanceRate(s);
+    });
+  }
 }
 
 function sanitizeStudentsRoster() {
@@ -2695,6 +2714,8 @@ function processDailyAutoAttendance() {
   const currentMonthName = monthNames[now.getMonth()];
   const currentYear = now.getFullYear();
   const monthYearKey = `${currentMonthName} ${currentYear}`;
+  const todayNum = now.getDate();
+  const currentHour = now.getHours();
 
   (state.students || []).forEach(student => {
     student.attendanceRecords = student.attendanceRecords || {};
@@ -2715,21 +2736,37 @@ function processDailyAutoAttendance() {
         student.attendanceRecords[`${monthYearKey}-2`] = "Academic Leave";
       }
 
-      for (let d = 3; d <= 7; d++) {
-        if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
-          student.attendanceRecords[`${monthYearKey}-${d}`] = "Present";
-        }
-      }
+      for (let d = 1; d <= 31; d++) {
+        const key = `${monthYearKey}-${d}`;
+        if (d === 1 || d === 2) continue;
 
-      for (let d = 8; d <= 31; d++) {
-        if (student.attendanceRecords[`${monthYearKey}-${d}`] === undefined) {
-          student.attendanceRecords[`${monthYearKey}-${d}`] = "Upcoming";
+        if (d < todayNum) {
+          if (student.attendanceRecords[key] === undefined || student.attendanceRecords[key] === "Upcoming") {
+            student.attendanceRecords[key] = "Present";
+          }
+        } else if (d === todayNum) {
+          // Automatic Present (green) marking every day on 5 AM (currentHour >= 5)
+          if (currentHour >= 5) {
+            if (student.attendanceRecords[key] === undefined || student.attendanceRecords[key] === "Upcoming") {
+              student.attendanceRecords[key] = "Present";
+            }
+          } else {
+            if (student.attendanceRecords[key] === undefined) {
+              student.attendanceRecords[key] = "Upcoming";
+            }
+          }
+        } else {
+          if (student.attendanceRecords[key] === undefined) {
+            student.attendanceRecords[key] = "Upcoming";
+          }
         }
       }
     }
 
     recalculateAttendanceRate(student);
   });
+
+  syncGlobalAcademicLeaves();
 }
 
 function generateAttendanceDaysGrid(student, monthYearStr) {
@@ -2814,10 +2851,30 @@ async function toggleAttendanceDayState(studentId, dateKey) {
   else if (current === "Academic Leave") next = "Upcoming";
   else if (current === "Upcoming" || current === "Holiday") next = "Present";
 
-  student.attendanceRecords[dateKey] = next;
-  recalculateAttendanceRate(student);
-  student.lastUpdated = Date.now();
-  await saveStudentDoc(student);
+  if (next === "Academic Leave") {
+    // If Academic Leave is clicked for one user, black mark (Academic Leave) appears on ALL users
+    state.students.forEach(s => {
+      s.attendanceRecords = s.attendanceRecords || {};
+      s.attendanceRecords[dateKey] = "Academic Leave";
+      recalculateAttendanceRate(s);
+      s.lastUpdated = Date.now();
+      saveStudentDoc(s);
+    });
+    showToast(`Academic Leave applied for ${dateKey} on all users!`, "info");
+  } else if (current === "Academic Leave") {
+    state.students.forEach(s => {
+      s.attendanceRecords = s.attendanceRecords || {};
+      s.attendanceRecords[dateKey] = next;
+      recalculateAttendanceRate(s);
+      s.lastUpdated = Date.now();
+      saveStudentDoc(s);
+    });
+  } else {
+    student.attendanceRecords[dateKey] = next;
+    recalculateAttendanceRate(student);
+    student.lastUpdated = Date.now();
+    await saveStudentDoc(student);
+  }
 
   await saveState();
   renderApp();
@@ -4429,8 +4486,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   processDailyAutoAttendance();
   renderApp();
 
+  let lastAutoAttendanceCheckHour = -1;
   setInterval(() => {
     const el = document.getElementById('liveClockPill');
     if (el) el.innerText = get12HourTimeString();
+
+    const now = new Date();
+    if (now.getHours() !== lastAutoAttendanceCheckHour) {
+      lastAutoAttendanceCheckHour = now.getHours();
+      processDailyAutoAttendance();
+      renderApp();
+    }
   }, 1000);
 });
