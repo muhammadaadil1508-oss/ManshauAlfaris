@@ -1398,31 +1398,71 @@ function renderAdminAcademicsView(student) {
         </div>
       </div>
 
-      <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-3">
-        <div class="w-full overflow-x-auto custom-scrollbar">
+      <div class="glass-card p-4 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-3">
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-3">
+          ${semExams.length === 0 ? `
+            <p class="text-xs text-slate-400 font-bold text-center py-6">No subjects recorded for ${state.selectedSem || 'Sem 1'}. Click "Add Subject" to enter marks.</p>
+          ` : semExams.map((item, idx) => `
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="font-extrabold text-xs text-slate-900 leading-tight">${item.subject}</p>
+                  ${item.code ? `<span class="text-[10px] text-slate-400 font-semibold">${item.code}</span>` : ''}
+                </div>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-black flex-shrink-0 ${item.absent ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-brand-50 text-brand-700 border border-brand-200'}">
+                  ${item.absent ? 'Absent (AB)' : 'Grade ' + item.grade}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-bold">
+                <span class="text-slate-500 uppercase text-[10px]">Score</span>
+                <span class="${item.absent ? 'text-rose-500' : 'text-slate-900'}">${item.absent ? 'Absent' : item.score + ' / 100'}</span>
+              </div>
+
+              <div class="flex items-center justify-end space-x-2 pt-1 border-t border-slate-100">
+                <button onclick="editExamScoreForStudent('${student.id}', '${item.id || item.subject}')" class="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs border border-brand-100 transition-colors">Edit</button>
+                <button onclick="deleteExamForStudent('${student.id}', '${item.id || item.subject}')" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs border border-rose-100 transition-colors">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+
+          ${semExams.length > 0 ? `
+            <div class="p-3.5 rounded-2xl bg-slate-900 text-white font-black flex items-center justify-between text-xs shadow-sm">
+              <span>Grand Total</span>
+              <div class="text-right">
+                <span class="text-emerald-400 text-sm block font-black">${totalScore} / ${maxScore}</span>
+                <span class="text-[10px] text-sky-400 font-bold">${grade} (${pct}%)</span>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block w-full overflow-x-auto custom-scrollbar">
           <table class="w-full text-left border-collapse text-xs min-w-[340px]">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
-                <th class="py-2 px-2">Subject</th>
-                <th class="py-2 px-1 text-center">Score</th>
-                <th class="py-2 px-1 text-center">Grade</th>
-                <th class="py-2 px-1 text-right">Action</th>
+                <th class="py-2.5 px-3">Subject</th>
+                <th class="py-2.5 px-3 text-center">Score</th>
+                <th class="py-2.5 px-3 text-center">Grade</th>
+                <th class="py-2.5 px-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
               ${semExams.map((item, idx) => `
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                  <td class="py-2.5 px-2 font-bold text-slate-800">
+                  <td class="py-2.5 px-3 font-bold text-slate-800">
                     <p class="break-words line-clamp-2">${item.subject}</p>
                     <span class="text-[10px] text-slate-400 font-normal">${item.code || ''}</span>
                   </td>
-                  <td class="py-2.5 px-1 text-center font-bold ${item.absent ? 'text-rose-500' : 'text-slate-700'}">${item.absent ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-100 text-rose-600 border border-rose-200">Absent</span>' : item.score + ' / 100'}</td>
-                  <td class="py-2.5 px-1 text-center">
+                  <td class="py-2.5 px-3 text-center font-bold ${item.absent ? 'text-rose-500' : 'text-slate-700'}">${item.absent ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-rose-100 text-rose-600 border border-rose-200">Absent</span>' : item.score + ' / 100'}</td>
+                  <td class="py-2.5 px-3 text-center">
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${item.absent ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-slate-100 text-slate-800 border border-slate-200'}">
                       ${item.absent ? 'AB' : item.grade}
                     </span>
                   </td>
-                  <td class="py-2.5 px-1 text-right space-x-1.5">
+                  <td class="py-2.5 px-3 text-right space-x-1.5">
                     <button onclick="editExamScoreForStudent('${student.id}', '${item.id || item.subject}')" class="text-brand-600 hover:text-brand-800 font-bold text-xs">Edit</button>
                     <button onclick="deleteExamForStudent('${student.id}', '${item.id || item.subject}')" class="text-rose-600 hover:text-rose-800 font-bold text-xs">Delete</button>
                   </td>
@@ -1433,18 +1473,18 @@ function renderAdminAcademicsView(student) {
             ${semExams.length > 0 ? `
               <tfoot class="border-t-2 border-slate-200 bg-slate-50/90 font-black">
                 <tr class="text-slate-900">
-                  <td class="py-2.5 px-2 uppercase font-extrabold tracking-wider text-[11px] sm:text-xs text-slate-700">
+                  <td class="py-2.5 px-3 uppercase font-extrabold tracking-wider text-[11px] sm:text-xs text-slate-700">
                     Grand Total
                   </td>
-                  <td class="py-2.5 px-1 text-center font-black text-xs sm:text-sm text-slate-900">
+                  <td class="py-2.5 px-3 text-center font-black text-xs sm:text-sm text-slate-900">
                     ${totalScore}/${maxScore}
                   </td>
-                  <td class="py-2.5 px-1 text-center">
+                  <td class="py-2.5 px-3 text-center">
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-black bg-brand-600 text-white shadow-xs">
                       ${grade} (${pct}%)
                     </span>
                   </td>
-                  <td class="py-2.5 px-1"></td>
+                  <td class="py-2.5 px-3"></td>
                 </tr>
               </tfoot>
             ` : ''}
@@ -1882,18 +1922,55 @@ function renderControlPanelPortal() {
           <select onchange="changeSelectedSemester(this.value)" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 shadow-sm">
             ${["Sem 1", "Sem 2", "Sem 3", "Sem 4"].map(sem => `
               <option value="${sem}" ${state.selectedSem === sem ? 'selected' : ''}>${sem}</option>
-            `).join('')}
-          </select>
-
-          <button onclick="openAddSubjectModal('${cpStudent.id}')" class="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
+            <button onclick="openAddSubjectModal('${cpStudent.id}')" class="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
             ${icon('plus', 'w-3.5 h-3.5')}
             <span>Add Subject</span>
           </button>
         </div>
       </div>
 
-      <div class="glass-card p-5 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-3">
-        <div class="w-full overflow-x-auto">
+      <div class="glass-card p-4 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-3">
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-3">
+          ${semExams.length === 0 ? `
+            <p class="text-xs text-slate-400 font-bold text-center py-6">No subjects recorded for ${state.selectedSem || 'Sem 1'}. Click "Add Subject" to enter marks.</p>
+          ` : semExams.map((item, idx) => `
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="font-extrabold text-xs text-slate-900 leading-tight">${item.subject}</p>
+                  ${item.code ? `<span class="text-[10px] text-slate-400 font-semibold">${item.code}</span>` : ''}
+                </div>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-black flex-shrink-0 ${item.absent ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-brand-50 text-brand-700 border border-brand-200'}">
+                  ${item.absent ? 'Absent (AB)' : 'Grade ' + item.grade}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-bold">
+                <span class="text-slate-500 uppercase text-[10px]">Score</span>
+                <span class="${item.absent ? 'text-rose-500' : 'text-slate-900'}">${item.absent ? 'Absent' : item.score + ' / 100'}</span>
+              </div>
+
+              <div class="flex items-center justify-end space-x-2 pt-1 border-t border-slate-100">
+                <button onclick="editExamScoreForStudent('${cpStudent.id}', '${item.id || item.subject}')" class="px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs border border-brand-100 transition-colors">Edit</button>
+                <button onclick="deleteExamForStudent('${cpStudent.id}', '${item.id || item.subject}')" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs border border-rose-100 transition-colors">Delete</button>
+              </div>
+            </div>
+          `).join('')}
+
+          ${semExams.length > 0 ? `
+            <div class="p-3.5 rounded-2xl bg-slate-900 text-white font-black flex items-center justify-between text-xs shadow-sm">
+              <span>Grand Total</span>
+              <div class="text-right">
+                <span class="text-emerald-400 text-sm block font-black">${totalScore} / ${maxScore}</span>
+                <span class="text-[10px] text-sky-400 font-bold">${grade} (${pct}%)</span>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block w-full overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
@@ -1938,7 +2015,7 @@ function renderControlPanelPortal() {
                     ${totalScore}/${maxScore}
                   </td>
                   <td class="py-3 px-3 text-center">
-                    <span class="px-2.5 py-1 rounded-lg text-xs font-black bg-brand-600 text-white shadow-xs">
+                    <span class="px-3 py-1 rounded-lg text-xs font-black bg-brand-600 text-white shadow-sm inline-block">
                       ${grade} (${pct}%)
                     </span>
                   </td>
@@ -1952,7 +2029,6 @@ function renderControlPanelPortal() {
 
       ${renderSemesterRankHoldersComponent(state.selectedSem)}
     </div>
-  `;
 
   return `
     <div class="max-w-7xl mx-auto w-full">
@@ -2441,7 +2517,42 @@ function renderExaminationView(student) {
           </div>
         </div>
 
-        <div class="w-full overflow-x-auto custom-scrollbar" id="marksheetPDFContent">
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-3">
+          ${semExams.length === 0 ? `
+            <p class="text-xs text-slate-400 font-bold text-center py-6">No exam subjects recorded for ${state.selectedSem}.</p>
+          ` : semExams.map(item => `
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <p class="font-extrabold text-xs text-slate-900 leading-tight">${item.subject}</p>
+                  ${item.code ? `<span class="text-[10px] text-slate-400 font-semibold">${item.code}</span>` : ''}
+                </div>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-black flex-shrink-0 ${item.absent ? 'bg-rose-100 text-rose-600 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
+                  ${item.absent ? 'AB' : 'Grade ' + item.grade}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between text-[11px] bg-slate-50 p-2 rounded-xl border border-slate-100 font-bold">
+                <span class="text-slate-500 uppercase text-[10px]">Score</span>
+                <span class="${item.absent ? 'text-rose-500' : 'text-slate-900'}">${item.absent ? 'Absent' : item.score + ' / 100'}</span>
+              </div>
+            </div>
+          `).join('')}
+
+          ${semExams.length > 0 ? `
+            <div class="p-3.5 rounded-2xl bg-slate-900 text-white font-black flex items-center justify-between text-xs shadow-sm">
+              <span>Grand Total</span>
+              <div class="text-right">
+                <span class="text-emerald-400 text-sm block font-black">${totalScore} / ${maxScore}</span>
+                <span class="text-[10px] text-sky-400 font-bold">${grade} Grade</span>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block w-full overflow-x-auto custom-scrollbar" id="marksheetPDFContent">
           <table class="w-full text-left border-collapse text-xs min-w-[340px]">
             <thead>
               <tr class="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
