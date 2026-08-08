@@ -327,7 +327,12 @@ function setupRealtimeSync() {
 
   unsubscribeAnnouncements = rtdbOnValue(rtdbRef(db, 'announcements/global'), (snapshot) => {
     if (snapshot.exists()) {
-      state.announcements = snapshot.val().data || [];
+      const incoming = snapshot.val().data || [];
+      const readMap = new Map((state.announcements || []).map(a => [a.id, a.read]));
+      state.announcements = incoming.map(a => ({
+        ...a,
+        read: readMap.has(a.id) ? readMap.get(a.id) : (a.read || false)
+      }));
       saveStateLocalOnly();
       isBackendActive = true;
       updateStatusBadgeUI();
@@ -3705,6 +3710,14 @@ function cropAndSavePhoto() {
 // --- HANDLERS & NAVIGATION ---
 function toggleModal(name, show) {
   state.modals[name] = show;
+  if (name === 'notification' && show) {
+    if (Array.isArray(state.announcements)) {
+      state.announcements.forEach(a => {
+        if (a) a.read = true;
+      });
+    }
+    saveStateLocalOnly();
+  }
   if (name === 'addStudent' && !show) {
     newStudPhotoDataUrl = null;
   }
