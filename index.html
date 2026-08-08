@@ -11,6 +11,15 @@
   <meta name="theme-color" content="#1e3a8a" />
   <link rel="canonical" href="https://manshau-alfaris.vercel.app/" />
 
+  <!-- Progressive Web App (PWA) Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MANSHAU ALFARIS" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+
   <!-- Open Graph / Facebook / WhatsApp / Telegram Meta Tags -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://manshau-alfaris.vercel.app/" />
@@ -193,5 +202,21 @@
 
   <!-- Application Logic (Loaded with defer for fast DOM parsing) -->
   <script src="app.js" defer></script>
+
+  <!-- Service Worker Registration for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered successfully with scope:', registration.scope);
+          })
+          .catch((error) => {
+            console.error('[PWA] Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
 </body>
+
 </html>
