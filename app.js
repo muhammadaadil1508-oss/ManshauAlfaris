@@ -1785,26 +1785,26 @@ function renderControlPanelPortal() {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash In</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalCredits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash In</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(fin.totalCredits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('arrow-down-left','w-6 h-6')}</div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">${icon('arrow-down-left','w-6 h-6 sm:w-7 sm:h-7')}</div>
         </div>
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash Out</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalDebits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash Out</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(fin.totalDebits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('arrow-up-right','w-6 h-6')}</div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">${icon('arrow-up-right','w-6 h-6 sm:w-7 sm:h-7')}</div>
         </div>
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Net Total Balance</p>
-            <p class="text-3xl font-black mt-1">${formatINR(netBalance)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Net Total Balance</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(netBalance)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">${icon('wallet','w-6 h-6')}</div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">${icon('wallet','w-6 h-6 sm:w-7 sm:h-7')}</div>
         </div>
       </div>
 
@@ -2133,33 +2133,33 @@ function renderAdminFinanceView(student, fin) {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash In</p>
-            <p class="text-3xl font-black mt-1">${formatINR(targetFin.totalCredits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash In</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(targetFin.totalCredits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('arrow-down-left', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('arrow-down-left', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash Out</p>
-            <p class="text-3xl font-black mt-1">${formatINR(targetFin.totalDebits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash Out</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(targetFin.totalDebits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('arrow-up-right', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('arrow-up-right', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Net Total Balance</p>
-            <p class="text-3xl font-black mt-1">${formatINR(netBalance)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Net Total Balance</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(netBalance)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('wallet', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('wallet', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
       </div>
@@ -2751,33 +2751,33 @@ function renderBankCreditsView(student, fin) {
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash In</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalCredits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash In</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(fin.totalCredits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('arrow-down-left', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('arrow-down-left', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Cash Out</p>
-            <p class="text-3xl font-black mt-1">${formatINR(fin.totalDebits)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Cash Out</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(fin.totalDebits)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('arrow-up-right', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('arrow-up-right', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
 
-        <div class="p-5 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
+        <div class="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-brand-600 to-blue-700 text-white shadow-md flex items-center justify-between">
           <div>
-            <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Net Total Balance</p>
-            <p class="text-3xl font-black mt-1">${formatINR(netBalance)}</p>
+            <p class="text-xs sm:text-sm font-extrabold opacity-95 uppercase tracking-wider">Net Total Balance</p>
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mt-1 sm:mt-1.5">${formatINR(netBalance)}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-            ${icon('wallet', 'w-6 h-6')}
+          <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white flex-shrink-0">
+            ${icon('wallet', 'w-6 h-6 sm:w-7 sm:h-7')}
           </div>
         </div>
       </div>
