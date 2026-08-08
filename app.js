@@ -1074,11 +1074,11 @@ function renderStudentAccountsRosterComponent() {
     <div class="glass-card p-4 sm:p-6 rounded-3xl shadow-anti-gravity border border-white space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
-          <h3 class="text-sm font-extrabold text-slate-900">Genesis 02 Student Users (${adminStudents.length})</h3>
+          <h3 class="text-sm font-extrabold text-slate-900">Registered Student Users (${adminStudents.length})</h3>
         </div>
         <button onclick="toggleModal('addStudent', true)" class="flex items-center justify-center space-x-1.5 bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all hover:scale-105 self-start sm:self-auto">
           ${icon('userPlus', 'w-3.5 h-3.5')}
-          <span>Add New Student User</span>
+          <span>Add User</span>
         </button>
       </div>
 
@@ -1239,7 +1239,7 @@ function renderAdminOverviewView(fin) {
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Genesis 02 Users</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">Users</p>
             <p class="text-xl font-black text-white mt-0.5">${totalStudentsCount}</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
@@ -1633,14 +1633,14 @@ function renderControlPanelPortal() {
           <div class="flex items-center gap-2.5">
             <button onclick="toggleModal('addStudent', true)" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-105">
               ${icon('userPlus', 'w-3.5 h-3.5 text-white')}
-              <span>Add Genesis 01 User</span>
+              <span>Add User</span>
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Genesis 01 Users</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400">Users</p>
             <p class="text-xl font-black text-white mt-0.5">${totalGenesis01Count} Accounts</p>
           </div>
           <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700/60">
@@ -1661,7 +1661,7 @@ function renderControlPanelPortal() {
       <div class="glass-card p-6 rounded-3xl shadow-anti-gravity border border-white space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h3 class="text-base font-extrabold text-slate-900">Genesis 01 Registered User Accounts</h3>
+            <h3 class="text-base font-extrabold text-slate-900">Registered User Accounts</h3>
           </div>
           <span class="px-3 py-1 bg-indigo-50 text-indigo-700 font-extrabold text-xs rounded-full border border-indigo-100 self-start sm:self-auto">
             Genesis 01 Batch Control
@@ -3565,7 +3565,7 @@ function renderModals() {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
         <div class="glass-card w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-anti-gravity-lg border border-white bg-white/95 space-y-4 my-8">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="text-base font-black text-slate-900">Add New Student User</h3>
+            <h3 class="text-base font-black text-slate-900">Add User</h3>
             <button onclick="toggleModal('addStudent', false)" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
               ${icon('x', 'w-5 h-5')}
             </button>
